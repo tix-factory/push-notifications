@@ -14,6 +14,7 @@ services:
     source_dir: 'services/api'
     dockerfile_path: 'services/api/Dockerfile'
 
+static_sites:
   # This is the app that the humans interact with in their web browsers.
   - name: 'push-notifications-app'
     github:
@@ -21,5 +22,5 @@ services:
       deploy_on_push: true
       repo: 'tix-factory/push-notifications-demo'
     source_dir: 'services/app'
-    build_command: 'npm run build'
-    environment_slug: 'node-js'
+    dockerfile_path: 'services/app/Dockerfile'
+    output_dir: '/app/build'
