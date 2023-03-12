@@ -1,0 +1,26 @@
+# https://docs.digitalocean.com/glossary/app-spec
+# The app spec, is a YAML manifest that declaratively states everything about your app.
+# Including each resource and all of your app’s environment variables and configuration variables.
+spec:
+  name: 'push-notifications-demo'
+
+  services:
+    # This is the backend for the push notifications demo,
+    # the thing actually sending the push notifications.
+    - name: 'push-notifications-api'
+      github:
+        branch: main
+        deploy_on_push: true
+        repo_clone_url: 'https://github.com/tix-factory/push-notifications-demo.git'
+      source_dir: 'services/api'
+      dockerfile_path: 'Dockerfile'
+
+    # This is the app that the humans interact with in their web browsers.
+    - name: 'push-notifications-app'
+      github:
+        branch: 'main'
+        deploy_on_push: true
+        repo_clone_url: 'https://github.com/tix-factory/push-notifications-demo.git'
+      source_dir: 'services/app'
+      build_command: 'npm run build'
+      environment_slug: 'node-js'
