@@ -1,0 +1,22 @@
+# docker-compose version
+version: '3.9'
+
+# All the containers to run.
+services:
+  api:
+    build:
+      context: './services/api'
+      dockerfile: 'Dockerfile'
+
+    container_name: 'api'
+
+    ports:
+      - '80'
+
+    restart: 'always'
+
+# Ensure all the services in this docker-compose file connect to the tix-factory docker network.
+networks:
+  default:
+    name: 'tix-factory'
+    external: true

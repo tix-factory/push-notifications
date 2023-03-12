@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup Label="AssemblyMetadata">
+    <Company>Tix Factory</Company>
+    <RepositoryUrl>https://github.com/tix-factory/push-notifications-demo</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Label="AssemblyProperties" Condition="'$(IsTestProject)' != 'true'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>
