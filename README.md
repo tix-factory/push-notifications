@@ -1,6 +1,6 @@
 # :bell: Push Notifications (Demo)
 
-This repository exists to serve as a demo for the [Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API), which can be viewed on [notifications.tixfactory.systems](https://notifications.tixfactory.systems).
+This repository exists to serve as a demo for the [Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API), which can be viewed on [demo.push-notifications.app](https://demo.push-notifications.app).
 
 This demo is intended to be deployed via [DigitalOcean App Platform](https://docs.digitalocean.com/products/app-platform/), for convenience. But the applications are written to be compatible outside of this deployment mechanism.
 
