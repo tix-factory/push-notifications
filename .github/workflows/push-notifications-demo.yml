@@ -43,16 +43,15 @@ jobs:
         run: >-
           curl -v --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_APP_PORT }}
 
-      - name: '🪵 Logs'
+      - name: '🪵 Logs (api)'
         if: ${{ always() }}
-        run: |
-          echo "::group::api"
+        run: >-
           docker-compose logs api
-          echo ""::endgroup::"
 
-          echo "::group::app"
+      - name: '🪵 Logs (app)'
+        if: ${{ always() }}
+        run: >-
           docker-compose logs app
-          echo ""::endgroup::"
 
       - name: '🛑 Stop Containers'
         run: >-
