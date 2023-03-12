@@ -13,13 +13,13 @@ jobs:
   build:
     runs-on: 'ubuntu-latest'
 
-    name: 'build (${{ matrix.name }})'
+    name: 'build (${{ matrix.service-name }})'
 
     strategy:
       matrix:
         include:
-          - name: 'api'
-          - name: 'build'
+          - service-name: 'api'
+          - service-name: 'build'
 
     steps:
       - name: '📥 Clone Repository'
@@ -27,8 +27,8 @@ jobs:
 
       - name: '🏗️ Build'
         run: >-
-          docker-compose build ${{ matrix.name }}
+          docker-compose build ${{ matrix.service-name }}
 
       - name: '🐳 Run'
         run: >-
-          docker-compose run -d ${{ matrix.name }}
+          docker-compose run -d ${{ matrix.service-name }}
