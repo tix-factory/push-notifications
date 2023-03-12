@@ -73,7 +73,9 @@ public class PushNotificationsController : Controller
         // But what we do have.. is the push notification registration information that we'll want to use later.
         var authenticationProperties = new AuthenticationProperties(new Dictionary<string, string>
         {
-            [nameof(request.Endpoint)] = request.Endpoint.AbsoluteUri
+            [nameof(request.Endpoint)] = request.Endpoint.AbsoluteUri,
+            [nameof(request.PublicKey)] = request.PublicKey,
+            [nameof(request.AuthenticationSecret)] = request.AuthenticationSecret,
         });
 
         // Now "sign the user in" to store the registration information in the cookie.
@@ -129,14 +131,18 @@ public class PushNotificationsController : Controller
     {
         var authenticationSession = await _AuthenticationService.AuthenticateAsync(HttpContext, CookieAuthenticationDefaults.AuthenticationScheme);
         if (authenticationSession.Properties?.Items.TryGetValue(nameof(RegistrationRequest.Endpoint), out var rawEndpoint) != true
-            || !Uri.TryCreate(rawEndpoint, UriKind.Absolute, out var endpoint))
+            || !Uri.TryCreate(rawEndpoint, UriKind.Absolute, out var endpoint)
+            || !authenticationSession.Properties.Items.TryGetValue(nameof(RegistrationRequest.PublicKey), out var publicKey)
+            || !authenticationSession.Properties.Items.TryGetValue(nameof(RegistrationRequest.AuthenticationSecret), out var authenticationSecret))
         {
             return null;
         }
 
         return new RegistrationResult
         {
-            Endpoint = endpoint
+            Endpoint = endpoint,
+            PublicKey = publicKey,
+            AuthenticationSecret = authenticationSecret
         };
     }
 }

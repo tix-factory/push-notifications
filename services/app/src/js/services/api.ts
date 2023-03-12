@@ -13,6 +13,11 @@ const getPushSubscriptionExpiration = (
   return null;
 };
 
+const base64Encode = (arrayBuffer: ArrayBuffer) => {
+  // https://stackoverflow.com/a/11562550/1663648
+  return btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+};
+
 const register = async (pushSubscription: PushSubscription): Promise<void> => {
   if (!pushSubscription.endpoint) {
     throw new Error('Invalid push subscription endpoint');
@@ -23,6 +28,18 @@ const register = async (pushSubscription: PushSubscription): Promise<void> => {
     return;
   }
 
+  // Fetch the keys for the subscription, so the server can use them when sending push notifications.
+  // https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription/getKey
+  const p256dh = pushSubscription.getKey('p256dh');
+  if (!p256dh) {
+    throw new Error('Invalid push subscription p256dh key');
+  }
+
+  const auth = pushSubscription.getKey('auth');
+  if (!auth) {
+    throw new Error('Invalid push subscription auth key');
+  }
+
   const response = await fetch('/api/v1/push-notifications/register', {
     method: 'POST',
     headers: {
@@ -31,6 +48,8 @@ const register = async (pushSubscription: PushSubscription): Promise<void> => {
     body: JSON.stringify({
       endpoint: pushSubscription.endpoint,
       expiration: getPushSubscriptionExpiration(pushSubscription),
+      p256dh: base64Encode(p256dh),
+      auth: base64Encode(auth),
     }),
     credentials: 'include',
   });

@@ -6,6 +6,13 @@ namespace TixFactory.PushNotifications.Api;
 /// <summary>
 /// Request parameters containing the information necessary to send push notifications back to the browser.
 /// </summary>
+/// <remarks>
+/// It's possible I've done, or named something horribly wrong.
+/// I'm writing this demo to further my understanding of the push notification
+/// system that browsers have setup. And it's a lot.
+///
+/// I barely know what I'm talking about, 
+/// </remarks>
 [DataContract]
 public class RegistrationRequest
 {
@@ -29,4 +36,22 @@ public class RegistrationRequest
     /// </remarks>
     [DataMember(Name = "expiration")]
     public DateTime? Expiration { get; set; }
+
+    /// <summary>
+    /// The public key the push subscription is subscribed with.
+    /// </summary>
+    /// <remarks>
+    /// Base64 encoded.
+    /// </remarks>
+    [DataMember(Name = "p256dh")]
+    public string PublicKey { get; set; }
+
+    /// <summary>
+    /// The authentication secret for the push subscription.
+    /// </summary>
+    /// <remarks>
+    /// Base64 encoded.
+    /// </remarks>
+    [DataMember(Name = "auth")]
+    public string AuthenticationSecret { get; set; }
 }
