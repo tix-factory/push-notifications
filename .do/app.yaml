@@ -24,6 +24,7 @@ services:
     instance_size_slug: 'basic-xxs'
     routes:
       - path: /api
+        preserve_path_prefix: true
     source_dir: 'services/api'
     dockerfile_path: 'services/api/Dockerfile'
 
