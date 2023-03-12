@@ -38,10 +38,16 @@ public class PushNotificationsController : Controller
     [HttpGet, Route("registration")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(RegistrationResult), (int)HttpStatusCode.OK)]
-    public RegistrationResult GetRegistration()
+    public async Task<ActionResult> GetRegistration()
     {
-        var result = new RegistrationResult();
-        return result;
+        var result = await GetPushSubscription();
+        if (result == null)
+        {
+            // This should be impossible, if we're here, we're authorized.
+            return Unauthorized();
+        }
+
+        return Json(result);
     }
 
     /// <summary>
@@ -67,7 +73,7 @@ public class PushNotificationsController : Controller
         // But what we do have.. is the push notification registration information that we'll want to use later.
         var authenticationProperties = new AuthenticationProperties(new Dictionary<string, string>
         {
-
+            [nameof(request.Endpoint)] = request.Endpoint.AbsoluteUri
         });
 
         // Now "sign the user in" to store the registration information in the cookie.
@@ -105,6 +111,32 @@ public class PushNotificationsController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> SendPushNotification()
     {
+        var subscription = await GetPushSubscription();
+        if (subscription == null)
+        {
+            // This should be impossible, if we're here, we're authorized.
+            return Unauthorized();
+        }
+
         return NoContent();
+    }
+
+    /// <summary>
+    /// Gets the currently authenticated push subscription.
+    /// </summary>
+    /// <returns>The push subscription information.</returns>
+    private async Task<RegistrationResult> GetPushSubscription()
+    {
+        var authenticationSession = await _AuthenticationService.AuthenticateAsync(HttpContext, CookieAuthenticationDefaults.AuthenticationScheme);
+        if (authenticationSession.Properties?.Items.TryGetValue(nameof(RegistrationRequest.Endpoint), out var rawEndpoint) != true
+            || !Uri.TryCreate(rawEndpoint, UriKind.Absolute, out var endpoint))
+        {
+            return null;
+        }
+
+        return new RegistrationResult
+        {
+            Endpoint = endpoint
+        };
     }
 }
