@@ -56,4 +56,6 @@ jobs:
 
       - name: '🛑 Stop Containers'
         run: >-
-          docker-compose rm --stop
+          docker-compose rm
+          --stop
+          --force
