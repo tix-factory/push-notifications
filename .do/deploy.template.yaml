@@ -1,0 +1,31 @@
+# File is duplicated from app.yaml.
+spec:
+  name: 'push-notifications-demo'
+
+  services:
+    # This is the backend for the push notifications demo,
+    # the thing actually sending the push notifications.
+    - name: 'push-notifications-api'
+      github:
+        branch: 'feature/digitalocean-app-deploy'
+        deploy_on_push: true
+        repo: 'tix-factory/push-notifications-demo'
+      source_dir: 'services/api'
+      dockerfile_path: 'services/api/Dockerfile'
+      http_port: 80
+      health_check:
+        http_path: '/health'
+      routes:
+        - path: '/api'
+          preserve_path_prefix: false
+
+  static_sites:
+    # This is the app that the humans interact with in their web browsers.
+    - name: 'push-notifications-app'
+      github:
+        branch: 'feature/digitalocean-app-deploy'
+        deploy_on_push: true
+        repo: 'tix-factory/push-notifications-demo'
+      source_dir: 'services/app'
+      dockerfile_path: 'services/app/Dockerfile'
+      output_dir: '/app/build'
