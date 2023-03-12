@@ -3,7 +3,6 @@ import { Fragment } from 'react';
 import { serviceWorkerUrl } from '../../../../constants';
 import ServiceWorkerInstallationState from '../../../../enums/serviceWorkerState';
 import useServiceWorkerRegistration from '../../../hooks/useServiceWorkerRegistration';
-import NotificationPermissionAlert from '../../notification-permission-alert';
 import SendNotificationButton from '../../send-notification-button';
 
 export default function AppContent() {
@@ -37,7 +36,6 @@ export default function AppContent() {
   // Once we have our registered service worker, show the rest of the content on the page.
   return (
     <Fragment>
-      <NotificationPermissionAlert />
       <SendNotificationButton />
     </Fragment>
   );

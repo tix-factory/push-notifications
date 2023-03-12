@@ -32,6 +32,7 @@ const register = async (pushSubscription: PushSubscription): Promise<void> => {
       endpoint: pushSubscription.endpoint,
       expiration: getPushSubscriptionExpiration(pushSubscription),
     }),
+    credentials: 'include',
   });
 
   if (!response.ok) {
