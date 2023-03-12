@@ -31,8 +31,9 @@ jobs:
           docker-compose build
 
       - name: '🐳 Run'
-        run: >-
+        run: |
           docker-compose up -d
+          sleep 5
 
       - name: '🔌 Ensure Connectivity (api)'
         run: >-
@@ -43,6 +44,7 @@ jobs:
           curl -v --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_APP_PORT }}
 
       - name: '🪵 Logs'
+        if: ${{ always() }}
         run: |
           echo "::group::api"
           docker-compose logs api
