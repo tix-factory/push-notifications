@@ -13,3 +13,13 @@ services:
       repo: 'tix-factory/push-notifications-demo'
     source_dir: 'services/api'
     dockerfile_path: 'Dockerfile'
+
+  # This is the app that the humans interact with in their web browsers.
+  - name: 'push-notifications-app'
+    github:
+      branch: 'main'
+      deploy_on_push: true
+      repo: 'tix-factory/push-notifications-demo'
+    source_dir: 'services/app'
+    build_command: 'npm run build'
+    environment_slug: 'node-js'

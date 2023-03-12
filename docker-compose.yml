@@ -15,6 +15,18 @@ services:
 
     restart: 'always'
 
+  app:
+    build:
+      context: './services/app'
+      dockerfile: 'Dockerfile'
+
+    container_name: 'app'
+
+    ports:
+      - '3000'
+
+    restart: 'always'
+
 # Ensure all the services in this docker-compose file connect to the tix-factory docker network.
 networks:
   default:
