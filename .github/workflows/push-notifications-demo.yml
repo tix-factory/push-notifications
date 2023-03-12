@@ -31,9 +31,8 @@ jobs:
           docker-compose build
 
       - name: '🐳 Run'
-        run: |
-          docker-compose run -d app
-          docker-compose run -d api
+        run: >-
+          docker-compose up -d
 
       - name: '🔌 Ensure Connectivity (app)'
         run: >-
