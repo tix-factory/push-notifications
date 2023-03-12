@@ -16,10 +16,12 @@ jobs:
     name: 'build (${{ matrix.service-name }})'
 
     strategy:
+      fail-fast: false
+
       matrix:
         include:
           - service-name: 'api'
-          - service-name: 'build'
+          - service-name: 'app'
 
     steps:
       - name: '📥 Clone Repository'
