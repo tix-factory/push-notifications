@@ -1,4 +1,4 @@
-# DigitalOcean App Platform
+# :whale: DigitalOcean App Platform
 
 From what I can tell of this directory.. it's not actually used when you try to create a DigitalOcean App. Which is unfortunate, and time consuming.
 
