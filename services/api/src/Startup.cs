@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using WebPush;
 
 namespace TixFactory.PushNotifications.Api;
 
@@ -55,6 +57,37 @@ public class Startup
             .AddCookie(ConfigureCookieAuthenticationOptions);
 
         services.AddAuthorization();
+
+        // Add push notification dependencies
+        services.AddSingleton(sp =>
+        {
+            // VAPID details are used to identify ourselves with the push notification server.
+            // We must have a public key, private key, and email address.
+            // See also: https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var vapidConfiguration = configuration.GetSection("VAPID");
+
+            var publicKey = vapidConfiguration.GetValue<string>("PUBLIC_KEY");
+            var privateKey = vapidConfiguration.GetValue<string>("PRIVATE_KEY");
+            var emailAddress = vapidConfiguration.GetValue<string>("EMAIL_ADDRESS");
+
+            if (string.IsNullOrWhiteSpace(publicKey)
+                || string.IsNullOrWhiteSpace(privateKey)
+                || string.IsNullOrWhiteSpace(emailAddress))
+            {
+                // We'll look for this case in the controller, before attempting to send the notification.
+                return null;
+            }
+
+            var webPushClient = new WebPushClient();
+
+            webPushClient.SetVapidDetails(
+                subject: $"mailto:{emailAddress}",
+                publicKey: publicKey,
+                privateKey: privateKey);
+
+            return webPushClient;
+        });
     }
 
 

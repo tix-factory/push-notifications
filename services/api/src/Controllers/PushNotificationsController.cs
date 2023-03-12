@@ -2,12 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using WebPush;
 
 namespace TixFactory.PushNotifications.Api.Controllers;
 
@@ -18,17 +23,32 @@ namespace TixFactory.PushNotifications.Api.Controllers;
 public class PushNotificationsController : Controller
 {
     private readonly IAuthenticationService _AuthenticationService;
+    private readonly IConfiguration _Configuration;
+    private readonly WebPushClient _WebPushClient;
+    private readonly ILogger<PushNotificationsController> _Logger;
 
     /// <summary>
     /// Initializes a new <see cref="PushNotificationsController"/>.
     /// </summary>
     /// <param name="authenticationService">An <see cref="IAuthenticationService"/>.</param>
+    /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
+    /// <param name="webPushClient">A <see cref="WebPushClient"/>.</param>
+    /// <param name="logger">An <see cref="ILogger{TCategoryName}"/>.</param>
     /// <exception cref="ArgumentNullException">
     /// - <paramref name="authenticationService"/>
+    /// - <paramref name="configuration"/>
+    /// - <paramref name="logger"/>
     /// </exception>
-    public PushNotificationsController(IAuthenticationService authenticationService)
+    public PushNotificationsController(
+        IAuthenticationService authenticationService,
+        IConfiguration configuration,
+        WebPushClient webPushClient,
+        ILogger<PushNotificationsController> logger)
     {
         _AuthenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
+        _Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _WebPushClient = webPushClient;
+        _Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -73,7 +93,9 @@ public class PushNotificationsController : Controller
         // But what we do have.. is the push notification registration information that we'll want to use later.
         var authenticationProperties = new AuthenticationProperties(new Dictionary<string, string>
         {
-            [nameof(request.Endpoint)] = request.Endpoint.AbsoluteUri
+            [nameof(request.Endpoint)] = request.Endpoint.AbsoluteUri,
+            [nameof(request.PublicKey)] = request.PublicKey,
+            [nameof(request.AuthenticationSecret)] = request.AuthenticationSecret,
         });
 
         // Now "sign the user in" to store the registration information in the cookie.
@@ -105,11 +127,12 @@ public class PushNotificationsController : Controller
     /// <summary>
     /// Sends a push notification to the endpoint that was previously registered.
     /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <response code="401">The browser has not yet registered themselves, and so they are unauthenticated, and cannot be sent a push notification.</response>
     [HttpPost, Route("push")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult> SendPushNotification()
+    public async Task<ActionResult> SendPushNotification(CancellationToken cancellationToken)
     {
         var subscription = await GetPushSubscription();
         if (subscription == null)
@@ -117,6 +140,43 @@ public class PushNotificationsController : Controller
             // This should be impossible, if we're here, we're authorized.
             return Unauthorized();
         }
+
+        if (_WebPushClient == null)
+        {
+            _Logger.LogError($"{nameof(WebPushClient)} is unavailable. Please make sure you have a PRIVATE_KEY, PUBLIC_KEY, and EMAIL_ADDRESS set.");
+            return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+        }
+
+        var options = new Dictionary<string, object>();
+        var pushNotificationConfiguration = _Configuration.GetSection("PushNotifications");
+        var timeToLive = pushNotificationConfiguration.GetValue<TimeSpan?>("TimeToLive");
+        if (timeToLive.HasValue)
+        {
+            // How long a push message is retained by the push service (by default, four weeks).
+            options["TTL"] = (int)Math.Ceiling(timeToLive.Value.TotalSeconds);
+        }
+
+        var pushNotification = new PushNotificationPayload
+        {
+            Title = "Hello, world!",
+            Message = "This notification was sent using the push API.",
+            Link = new Uri("https://demo.push-notifications.app?notification_clicked=true"),
+            ButtonLink = new Uri("https://github.com/tix-factory/push-notifications-demo/issues"),
+            Icon = new Uri("https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f514.png")
+        };
+
+        pushNotification.Buttons.Add("🐛 File Bug");
+
+        var pushSubscription = new PushSubscription(
+            endpoint: subscription.Endpoint.AbsoluteUri,
+            p256dh: subscription.PublicKey,
+            auth: subscription.AuthenticationSecret);
+
+        await _WebPushClient.SendNotificationAsync(
+            pushSubscription,
+            payload: JsonConvert.SerializeObject(pushNotification),
+            options,
+            cancellationToken);
 
         return NoContent();
     }
@@ -129,14 +189,18 @@ public class PushNotificationsController : Controller
     {
         var authenticationSession = await _AuthenticationService.AuthenticateAsync(HttpContext, CookieAuthenticationDefaults.AuthenticationScheme);
         if (authenticationSession.Properties?.Items.TryGetValue(nameof(RegistrationRequest.Endpoint), out var rawEndpoint) != true
-            || !Uri.TryCreate(rawEndpoint, UriKind.Absolute, out var endpoint))
+            || !Uri.TryCreate(rawEndpoint, UriKind.Absolute, out var endpoint)
+            || !authenticationSession.Properties.Items.TryGetValue(nameof(RegistrationRequest.PublicKey), out var publicKey)
+            || !authenticationSession.Properties.Items.TryGetValue(nameof(RegistrationRequest.AuthenticationSecret), out var authenticationSecret))
         {
             return null;
         }
 
         return new RegistrationResult
         {
-            Endpoint = endpoint
+            Endpoint = endpoint,
+            PublicKey = publicKey,
+            AuthenticationSecret = authenticationSecret
         };
     }
 }
