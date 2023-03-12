@@ -42,6 +42,16 @@ jobs:
         run: >-
           curl -v --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_APP_PORT }}
 
+      - name: '🪵 Logs'
+        run: |
+          echo "::group::api"
+          docker-compose logs api
+          echo ""::endgroup::"
+
+          echo "::group::app"
+          docker-compose logs app
+          echo ""::endgroup::"
+
       - name: '🛑 Stop Containers'
         run: >-
           docker-compose rm --stop
