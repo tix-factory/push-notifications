@@ -1,9 +1,10 @@
-import { Alert, Box, CircularProgress, Link } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Link } from '@mui/material';
 import { Fragment, useEffect, useState } from 'react';
 import BrowserPermission from '../../../enums/browserPermission';
+import NotificationSendStatus from '../../../enums/notificationSendStatus';
 import PushSubscriptionState from '../../../enums/pushSubscriptionState';
 import ServerRegistrationState from '../../../enums/serverRegistrationState';
-import { register } from '../../../services/api';
+import { register, sendPushNotification } from '../../../services/api';
 import useNotificationPermission from '../../hooks/useNotificationPermission';
 import usePushNotificationSubscription from '../../hooks/usePushNotificationSubscription';
 
@@ -15,6 +16,7 @@ export default function SendNotificationButton() {
   const [registrationState, setRegistrationState] = useState(
     ServerRegistrationState.Loading
   );
+  const [sendStatus, setSendStatus] = useState(NotificationSendStatus.None);
 
   useEffect(() => {
     if (!pushSubscription?.endpoint) {
@@ -40,6 +42,18 @@ export default function SendNotificationButton() {
   const grantPermissionClick = async (event: React.MouseEvent) => {
     event.preventDefault();
     await requestNotificationPermission();
+  };
+
+  const sendPushNotificationClicked = async (event: React.MouseEvent) => {
+    setSendStatus(NotificationSendStatus.Sending);
+
+    try {
+      await sendPushNotification();
+      setSendStatus(NotificationSendStatus.Success);
+    } catch (err) {
+      console.error('Failed to send push notification', err);
+      setSendStatus(NotificationSendStatus.Error);
+    }
   };
 
   // Check the current state of our notification permissions.
@@ -143,7 +157,6 @@ export default function SendNotificationButton() {
 
     case ServerRegistrationState.Error:
     default:
-      // We failed to register the push subscription with the server.
       return (
         <Alert severity="error">
           The push notification subscription failed to register with the server.
@@ -152,7 +165,40 @@ export default function SendNotificationButton() {
   }
 
   // We're all set!
+  if (sendStatus === NotificationSendStatus.Sending) {
+    return <CircularProgress />;
+  }
+
   return (
-    <Box className="send-notification-button">We have a push subscription!</Box>
+    <Box
+      className="send-notification-button"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+      }}
+    >
+      {sendStatus === NotificationSendStatus.Success && (
+        <Fragment>
+          <Alert severity="success">Push notification has been sent.</Alert>
+          <br />
+        </Fragment>
+      )}
+      {sendStatus === NotificationSendStatus.Error && (
+        <Fragment>
+          <Alert severity="error">Push notification failed to send.</Alert>
+          <br />
+        </Fragment>
+      )}
+      <Button
+        onClick={sendPushNotificationClicked}
+        variant="outlined"
+        color="primary"
+        fullWidth
+      >
+        Send Push Notification
+      </Button>
+    </Box>
   );
 }

@@ -61,4 +61,15 @@ const register = async (pushSubscription: PushSubscription): Promise<void> => {
   registeredEndpoints[pushSubscription.endpoint] = new Date();
 };
 
-export { register };
+const sendPushNotification = async (): Promise<void> => {
+  const response = await fetch('/api/v1/push-notifications/push', {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to send push notification.');
+  }
+};
+
+export { register, sendPushNotification };
