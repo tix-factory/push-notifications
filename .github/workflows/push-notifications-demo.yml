@@ -17,8 +17,9 @@ jobs:
 
     strategy:
       matrix:
-        - name: 'api'
-        - name: 'build'
+        include:
+          - name: 'api'
+          - name: 'build'
 
     steps:
       - name: '📥 Clone Repository'
