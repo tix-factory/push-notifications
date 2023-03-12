@@ -1,11 +1,15 @@
-import { Alert, Box, CircularProgress } from '@mui/material';
+import { Alert, Box, CircularProgress, Link } from '@mui/material';
 import { Fragment, useEffect, useState } from 'react';
+import BrowserPermission from '../../../enums/browserPermission';
 import PushSubscriptionState from '../../../enums/pushSubscriptionState';
 import ServerRegistrationState from '../../../enums/serverRegistrationState';
 import { register } from '../../../services/api';
+import useNotificationPermission from '../../hooks/useNotificationPermission';
 import usePushNotificationSubscription from '../../hooks/usePushNotificationSubscription';
 
 export default function SendNotificationButton() {
+  const [notificationPermission, requestNotificationPermission] =
+    useNotificationPermission();
   const [pushSubscription, pushSubscriptionState] =
     usePushNotificationSubscription();
   const [registrationState, setRegistrationState] = useState(
@@ -16,6 +20,8 @@ export default function SendNotificationButton() {
     if (!pushSubscription?.endpoint) {
       return;
     }
+
+    console.log('We have a push subscription!', pushSubscription);
 
     register(pushSubscription)
       .then(() => {
@@ -29,8 +35,65 @@ export default function SendNotificationButton() {
         );
         setRegistrationState(ServerRegistrationState.Error);
       });
-  }, [pushSubscription?.endpoint]);
+  }, [pushSubscription, pushSubscription?.endpoint]);
 
+  const grantPermissionClick = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    await requestNotificationPermission();
+  };
+
+  // Check the current state of our notification permissions.
+  switch (notificationPermission) {
+    case BrowserPermission.Granted:
+      // We have notification permission, continue!
+      break;
+
+    case BrowserPermission.Denied:
+      // We were denied permission.. give the user the bad news they brought upon themselves.
+      return (
+        <Alert severity="error">
+          Notification permission has been explicitly denied.
+          <br />
+          You cannot receive push notifications.
+        </Alert>
+      );
+
+    case BrowserPermission.Unsupported:
+      // Sad.
+      return (
+        <Alert severity="error">
+          This browser does not support push notifications.
+        </Alert>
+      );
+
+    case BrowserPermission.RequiresPermission:
+      // Request permission from the user.
+      return (
+        <Alert severity="warning">
+          You must{' '}
+          <Link onClick={grantPermissionClick} href="#">
+            grant permission
+          </Link>{' '}
+          to receive push notifications.
+        </Alert>
+      );
+
+    case BrowserPermission.Loading:
+      // Give the user an indicator that we're working on it.
+      return <CircularProgress />;
+
+    default:
+    case BrowserPermission.Error:
+      // Uh oh..
+      return (
+        <Alert severity="error">
+          An unexpected error occurred while checking the browser notification
+          permission status.
+        </Alert>
+      );
+  }
+
+  // Check the current state of our push subscription.
   switch (pushSubscriptionState) {
     case PushSubscriptionState.Available:
       // We have our push subscription.
@@ -68,6 +131,7 @@ export default function SendNotificationButton() {
       break;
   }
 
+  // Check the current state of our server registration.
   switch (registrationState) {
     case ServerRegistrationState.Success:
       // We successfully registered the subscription, move on.
@@ -87,6 +151,7 @@ export default function SendNotificationButton() {
       );
   }
 
+  // We're all set!
   return (
     <Box className="send-notification-button">We have a push subscription!</Box>
   );
