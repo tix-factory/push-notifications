@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace TixFactory.PushNotifications.Api;
 
@@ -22,6 +24,7 @@ public class Startup
     /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
     public void Configure(IApplicationBuilder app)
     {
+        app.UsePathBase("/api");
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
@@ -44,7 +47,7 @@ public class Startup
         services.AddHealthChecks();
 
         // Add swagger
-        services.AddSwaggerGen()
+        services.AddSwaggerGen(ConfigureSwagger)
             .AddSwaggerGenNewtonsoftSupport();
 
         // Add "authentication + authorization"
@@ -77,6 +80,19 @@ public class Startup
         options.Filters.Add(new AuthorizeFilter(authorizationPolicyBuilder.Build()));
 
         options.Filters.Add(new ProducesAttribute("application/json"));
+    }
+
+    /// <summary>
+    /// Configures Swagger.
+    /// </summary>
+    /// <param name="options">The <see cref="SwaggerGenOptions"/>.</param>
+    private void ConfigureSwagger(SwaggerGenOptions options)
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "push-notifications-api",
+            Version = "v1"
+        });
     }
 
     /// <summary>
