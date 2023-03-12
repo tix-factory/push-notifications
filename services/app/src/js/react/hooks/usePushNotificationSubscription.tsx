@@ -7,6 +7,8 @@ import useNotificationPermission from './useNotificationPermission';
 import useServiceWorkerRegistration from './useServiceWorkerRegistration';
 
 // A hook for obtaining a push subscription, intended for notifications.
+// TODO: This hook doesn't support push subscription changes.
+// See: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope/pushsubscriptionchange_event
 export default function usePushNotificationSubscription(): [
   PushSubscription | null,
   PushSubscriptionState
