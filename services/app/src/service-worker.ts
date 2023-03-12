@@ -11,11 +11,46 @@ const disable_precache = self.__WB_MANIFEST;
 
 console.log('Service Worker Initialized');
 
-self.addEventListener('push', (event) => {
-  console.log(
-    'A push message has been sent to the service worker.',
-    event.data
-  );
+const openLink = (link: string) => {
+  // https://developer.mozilla.org/en-US/docs/Web/API/Clients/openWindow
+  // This is the equivalent to window.open
+  self.clients.openWindow(link);
+};
+
+self.addEventListener('push', async (event) => {
+  try {
+    const data = await event.data?.json();
+    if (!data) {
+      console.warn('Failed to parse push message data into JSON.', event.data);
+      return;
+    }
+
+    console.log('A push message has been sent to the service worker.', data);
+
+    const actions: NotificationAction[] = [];
+    data.buttons.forEach((buttonText: string, i: number) => {
+      actions.push({
+        action: `button_${i}`,
+        title: buttonText,
+      });
+    });
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
+    self.registration.showNotification(data.title, {
+      body: data.message,
+      icon: data.iconUrl,
+      data: {
+        link: data.link,
+        buttonLink: data.buttonLink,
+      },
+      actions: actions,
+    });
+  } catch (ex) {
+    console.warn(
+      'An unexpected error has occurred parsing the push message.',
+      ex
+    );
+  }
 });
 
 self.addEventListener('notificationclick', (event) => {
@@ -24,6 +59,12 @@ self.addEventListener('notificationclick', (event) => {
     event.notification,
     event.action
   );
+
+  if (event.action === 'button_0' && event.notification.data.buttonLink) {
+    openLink(event.notification.data.buttonLink);
+  } else if (!event.action && event.notification.data.link) {
+    openLink(event.notification.data.link);
+  }
 });
 
 self.addEventListener('notificationclose', (event) => {
