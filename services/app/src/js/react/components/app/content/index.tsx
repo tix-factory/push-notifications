@@ -7,7 +7,7 @@ import NotificationPermissionAlert from '../../notification-permission-alert';
 import SendNotificationButton from '../../send-notification-button';
 
 export default function AppContent() {
-  const [serviceWorkerRegistration, serviceWorkerInstallationState] =
+  const [, serviceWorkerInstallationState] =
     useServiceWorkerRegistration(serviceWorkerUrl);
 
   // Show a loading indicator while we install the service worker.

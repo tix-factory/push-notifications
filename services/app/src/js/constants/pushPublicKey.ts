@@ -4,7 +4,7 @@ const publicKey =
   'BPMX2ZD3jlIqKZOa8HhAVI2m_Ve_TyQK_opikVeg3v59U0UGTwVrNh9j4pPkMrs5ev5C_GnE6pJwpgASMhGCPWc';
 
 const padding = '='.repeat((4 - (publicKey.length % 4)) % 4);
-const base64 = (publicKey + padding).replace(/\-/g, '+').replace(/_/g, '/');
+const base64 = (publicKey + padding).replace(/-/g, '+').replace(/_/g, '/');
 
 const rawData = window.atob(base64);
 const outputArray = new Uint8Array(rawData.length);
