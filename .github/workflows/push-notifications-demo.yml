@@ -31,16 +31,17 @@ jobs:
           docker-compose build
 
       - name: '🐳 Run'
-        run: >-
-          docker-compose run -d
+        run: |
+          docker-compose run -d app
+          docker-compose run -d api
 
       - name: '🔌 Ensure Connectivity (app)'
         run: >-
-          curl --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_APP_PORT }}1
+          curl --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_APP_PORT }}
 
       - name: '🔌 Ensure Connectivity (api)'
         run: >-
-          curl --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_API_PORT }}1
+          curl --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_API_PORT }}
 
       - name: '🛑 Stop Containers'
         run: >-
