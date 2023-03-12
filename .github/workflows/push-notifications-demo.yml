@@ -1,0 +1,33 @@
+name: 'push-notifications-demo'
+
+on:
+  # Ensure the build runs on pull requests.
+  pull_request:
+
+  # Ensure the build runs when pushed to the main branch.
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    name: 'build (${{ matrix.name }})'
+
+    strategy:
+      matrix:
+        - name: 'api'
+        - name: 'build'
+
+    steps:
+      - name: '📥 Clone Repository'
+        uses: actions/checkout@v3
+
+      - name: '🏗️ Build'
+        run: >-
+          docker-compose build ${{ matrix.name }}
+
+      - name: '🐳 Run'
+        run: >-
+          docker-compose run -d ${{ matrix.name }}
