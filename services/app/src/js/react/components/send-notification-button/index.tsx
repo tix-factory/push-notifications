@@ -1,39 +1,50 @@
 import { Alert, Box, CircularProgress } from '@mui/material';
-import ServiceWorkerInstallationState from '../../../enums/serviceWorkerState';
-import useServiceWorkerRegistration from '../../hooks/useServiceWorkerRegistration';
-import NotificationPermissionAlert from '../notification-permission-alert';
+import { Fragment } from 'react';
+import PushSubscriptionState from '../../../enums/pushSubscriptionState';
+import usePushNotificationSubscription from '../../hooks/usePushNotificationSubscription';
 
 export default function SendNotificationButton() {
-  const [serviceWorkerRegistration, serviceWorkerInstallationState] =
-    useServiceWorkerRegistration('./service-worker.js');
+  const [pushSubscription, pushSubscriptionState] =
+    usePushNotificationSubscription();
 
-  // Show a loading indicator while we install the service worker.
-  // The service worker will be activated when a push notification is received.
-  switch (serviceWorkerInstallationState) {
-    case ServiceWorkerInstallationState.Loading:
+  switch (pushSubscriptionState) {
+    case PushSubscriptionState.Available:
+      // We have our push subscription.
+      break;
+
+    case PushSubscriptionState.Loading:
+      // Show a loading indicator while we obtain our push notificaiton subscription.
       return <CircularProgress />;
-    case ServiceWorkerInstallationState.Unsupported:
+
+    case PushSubscriptionState.Unsupported:
+      // The browser does not support push notification subscriptions.
       return (
         <Alert severity="error">
-          The browser does not support service workers, and cannot receive push
-          notifications.
+          The browser does not support push notification subscriptions.
         </Alert>
       );
-    case ServiceWorkerInstallationState.Error:
+
+    case PushSubscriptionState.Error:
+      // Something horrible happened here..
       return (
         <Alert severity="error">
-          An unexpected errror occurred installing the service worker.
+          An unexpected errror occurred subscribing to push notifications with
+          the browser.
           <br />
           Please refresh the page to try again.
         </Alert>
       );
+
+    case PushSubscriptionState.PermissionRequired:
+      // This will be handled by the NotificationPermissionAlert.
+      // Show nothing for now.
+      return <Fragment />;
+
     default:
       break;
   }
 
   return (
-    <Box className="send-notification-button">
-      <NotificationPermissionAlert />
-    </Box>
+    <Box className="send-notification-button">We have a push subscription!</Box>
   );
 }
