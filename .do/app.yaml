@@ -12,7 +12,7 @@ services:
       deploy_on_push: true
       repo: 'tix-factory/push-notifications-demo'
     source_dir: 'services/api'
-    dockerfile_path: 'Dockerfile'
+    dockerfile_path: 'services/api/Dockerfile'
 
   # This is the app that the humans interact with in their web browsers.
   - name: 'push-notifications-app'
