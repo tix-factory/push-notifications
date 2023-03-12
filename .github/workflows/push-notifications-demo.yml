@@ -34,13 +34,13 @@ jobs:
         run: >-
           docker-compose up -d
 
-      - name: '🔌 Ensure Connectivity (app)'
-        run: >-
-          curl --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_APP_PORT }}
-
       - name: '🔌 Ensure Connectivity (api)'
         run: >-
-          curl --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_API_PORT }}
+          curl -v --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_API_PORT }}/health
+
+      - name: '🔌 Ensure Connectivity (app)'
+        run: >-
+          curl -v --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_APP_PORT }}
 
       - name: '🛑 Stop Containers'
         run: >-

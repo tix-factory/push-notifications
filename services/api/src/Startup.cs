@@ -25,6 +25,7 @@ public class Startup
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseHealthChecks("/health");
         app.UseEndpoints(ConfigureEndpoints);
         app.UseSwagger();
         app.UseSwaggerUI();
@@ -39,6 +40,8 @@ public class Startup
         // Add controllers
         services.AddControllers(ConfigureMvc)
             .AddNewtonsoftJson();
+
+        services.AddHealthChecks();
 
         // Add swagger
         services.AddSwaggerGen()
