@@ -1,4 +1,5 @@
 # https://docs.digitalocean.com/glossary/app-spec
+# https://docs.digitalocean.com/products/app-platform/reference/app-spec/
 # The app spec, is a YAML manifest that declaratively states everything about your app.
 # Including each resource and all of your app’s environment variables and configuration variables.
 name: 'push-notifications-demo'
@@ -13,6 +14,12 @@ services:
       repo: 'tix-factory/push-notifications-demo'
     source_dir: 'services/api'
     dockerfile_path: 'services/api/Dockerfile'
+    http_port: 80
+    health_check:
+      http_path: '/health'
+    routes:
+      - path: '/api'
+        preserve_path_prefix: false
 
 static_sites:
   # This is the app that the humans interact with in their web browsers.
