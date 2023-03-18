@@ -20,7 +20,7 @@ jobs:
   build:
     runs-on: 'ubuntu-latest'
 
-    environment: ${{ github.event_name == 'push' && 'release' || '' }}
+    environment: 'release' # ${{ github.event_name == 'push' && 'release' || '' }}
 
     steps:
       # Setup
