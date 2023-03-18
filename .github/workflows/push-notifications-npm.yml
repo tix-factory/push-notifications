@@ -54,5 +54,5 @@ jobs:
         run: >-
           npm publish
           --access public
-          ${{ github.event_name == 'push' && '' || '--dry-run' }}
+          ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
         working-directory: libs/js/push-notifications
