@@ -20,7 +20,7 @@ jobs:
   build:
     runs-on: 'ubuntu-latest'
 
-    environment: 'release' # ${{ github.event_name == 'push' && 'release' || '' }}
+    environment: ${{ github.event_name == 'push' && 'release' || '' }}
 
     steps:
       # Setup
@@ -51,7 +51,7 @@ jobs:
 
       # Publish
       - name: '📤 Upload to npm'
-        if: ${{ github.event_name == 'push' }}
+        # if: ${{ github.event_name == 'push' }}
         run: |
           npm publish --access public
         working-directory: libs/js/push-notifications
