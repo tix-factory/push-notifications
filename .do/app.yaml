@@ -16,7 +16,7 @@ services:
     github:
       branch: 'main'
       deploy_on_push: true
-      repo: 'tix-factory/push-notifications-demo'
+      repo: 'tix-factory/push-notifications'
     health_check:
       http_path: '/health'
     http_port: 80
@@ -34,7 +34,7 @@ static_sites:
     github:
       branch: 'main'
       deploy_on_push: true
-      repo: 'tix-factory/push-notifications-demo'
+      repo: 'tix-factory/push-notifications'
     source_dir: 'services/app'
     output_dir: 'build'
     build_command: 'npm run build'
