@@ -1,6 +1,9 @@
-# :bell: Push Notifications (Demo)
+# :bell: Push Notifications
 
 This repository exists to serve as a demo for the [Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API), which can be viewed on [demo.push-notifications.app](https://demo.push-notifications.app).
+
+This repository also hosts a published [npm module](https://www.npmjs.com/package/@tix-factory/push-notifications), which can be used in React projects to hook into some of the push APIs.
+See also: [@tix-factory/push-notifications](./libs/js/push-notifications/)
 
 This demo is intended to be deployed via [DigitalOcean App Platform](https://docs.digitalocean.com/products/app-platform/), for convenience. But the applications are written to be compatible outside of this deployment mechanism.
 
