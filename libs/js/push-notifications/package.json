@@ -1,0 +1,21 @@
+{
+  "name": "@tix-factory/push-notifications",
+  "version": "1.0.0",
+  "description": "This module can be used to hook into the browser push API and service workers. Intended to be used with React.",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tix-factory/push-notifications.git"
+  },
+  "keywords": [
+    "react",
+    "push-notifications"
+  ],
+  "author": {
+    "name": "WebGL3D"
+  },
+  "bugs": {
+    "url": "https://github.com/tix-factory/push-notifications/issues"
+  }
+}
