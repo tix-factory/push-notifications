@@ -90,7 +90,7 @@ public class Startup
                 vapidSettings.PublicKey = keys.PublicKey;
                 vapidSettings.PrivateKey = keys.PrivateKey;
             }
-            else
+            else if (string.IsNullOrWhiteSpace(vapidSettings.PublicKey) || string.IsNullOrWhiteSpace(vapidSettings.PrivateKey))
             {
                 throw new ApplicationException("PUBLIC_KEY or PRIVATE_KEY is not set");
             }
