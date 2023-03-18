@@ -25,7 +25,7 @@ public class PushNotificationsController : Controller
     private readonly IAuthenticationService _AuthenticationService;
     private readonly IConfiguration _Configuration;
     private readonly WebPushClient _WebPushClient;
-    private readonly ILogger<PushNotificationsController> _Logger;
+    private readonly VapidConfiguration _VapidConfiguration;
 
     /// <summary>
     /// Initializes a new <see cref="PushNotificationsController"/>.
@@ -33,22 +33,24 @@ public class PushNotificationsController : Controller
     /// <param name="authenticationService">An <see cref="IAuthenticationService"/>.</param>
     /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
     /// <param name="webPushClient">A <see cref="WebPushClient"/>.</param>
-    /// <param name="logger">An <see cref="ILogger{TCategoryName}"/>.</param>
+    /// <param name="vapidConfiguration">The <see cref="VapidConfiguration"/>.</param>
     /// <exception cref="ArgumentNullException">
     /// - <paramref name="authenticationService"/>
     /// - <paramref name="configuration"/>
-    /// - <paramref name="logger"/>
+    /// - <paramref name="webPushClient"/>
+    /// - <paramref name="vapidConfiguration"/>
     /// </exception>
     public PushNotificationsController(
         IAuthenticationService authenticationService,
         IConfiguration configuration,
         WebPushClient webPushClient,
+        VapidConfiguration vapidConfiguration,
         ILogger<PushNotificationsController> logger)
     {
         _AuthenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         _Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-        _WebPushClient = webPushClient;
-        _Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _WebPushClient = webPushClient ?? throw new ArgumentNullException(nameof(webPushClient));
+        _VapidConfiguration = vapidConfiguration ?? throw new ArgumentNullException(nameof(vapidConfiguration));
     }
 
     /// <summary>
@@ -68,6 +70,20 @@ public class PushNotificationsController : Controller
         }
 
         return Json(result);
+    }
+
+    /// <summary>
+    /// Gets the metadata associated with sending push notifications.
+    /// </summary>
+    [HttpGet, Route("metadata")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(MetadataResult), (int)HttpStatusCode.OK)]
+    public async Task<MetadataResult> GetMetadata()
+    {
+        return new MetadataResult
+        {
+            PublicKey = _VapidConfiguration.PublicKey
+        };
     }
 
     /// <summary>
@@ -139,12 +155,6 @@ public class PushNotificationsController : Controller
         {
             // This should be impossible, if we're here, we're authorized.
             return Unauthorized();
-        }
-
-        if (_WebPushClient == null)
-        {
-            _Logger.LogError($"{nameof(WebPushClient)} is unavailable. Please make sure you have a PRIVATE_KEY, PUBLIC_KEY, and EMAIL_ADDRESS set.");
-            return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
         }
 
         var options = new Dictionary<string, object>();
