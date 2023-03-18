@@ -51,7 +51,8 @@ jobs:
 
       # Publish
       - name: '📤 Upload to npm'
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          npm publish --access public
+        run: >-
+          npm publish
+          --access public
+          ${{ github.event_name == 'push' && '' || '--dry-run' }}
         working-directory: libs/js/push-notifications
