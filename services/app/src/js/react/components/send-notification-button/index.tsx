@@ -1,18 +1,27 @@
 import { Alert, Box, Button, CircularProgress, Link } from '@mui/material';
 import { Fragment, useEffect, useState } from 'react';
-import { BrowserPermission } from '@tix-factory/push-notifications';
+import {
+  BrowserPermission,
+  PushSubscriptionState,
+  useNotificationPermission,
+  usePushNotificationSubscription,
+} from '@tix-factory/push-notifications';
 import NotificationSendStatus from '../../../enums/notificationSendStatus';
-import PushSubscriptionState from '../../../enums/pushSubscriptionState';
 import ServerRegistrationState from '../../../enums/serverRegistrationState';
 import { register, sendPushNotification } from '../../../services/api';
-import useNotificationPermission from '../../hooks/useNotificationPermission';
-import usePushNotificationSubscription from '../../hooks/usePushNotificationSubscription';
+import { pushPublicKey, serviceWorkerUrl } from '../../../constants';
 
 export default function SendNotificationButton() {
   const [notificationPermission, requestNotificationPermission] =
     useNotificationPermission();
   const [pushSubscription, pushSubscriptionState] =
-    usePushNotificationSubscription();
+    usePushNotificationSubscription({
+      serviceWorkerUrl,
+      pushSubscriptionOptions: {
+        applicationServerKey: pushPublicKey,
+        userVisibleOnly: true,
+      },
+    });
   const [registrationState, setRegistrationState] = useState(
     ServerRegistrationState.Loading
   );

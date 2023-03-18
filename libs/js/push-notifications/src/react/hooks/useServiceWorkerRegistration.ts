@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import ServiceWorkerInstallationState from '../../enums/serviceWorkerState';
+import ServiceWorkerInstallationState from '../../enums/serviceWorkerInstallationState';
 
 // A hook for installing, and fetching a service worker.
 export default function useServiceWorkerRegistration(

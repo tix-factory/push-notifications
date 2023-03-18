@@ -1,8 +1,10 @@
 import { Alert, CircularProgress } from '@mui/material';
+import {
+  ServiceWorkerInstallationState,
+  useServiceWorkerRegistration,
+} from '@tix-factory/push-notifications';
 import { Fragment } from 'react';
 import { serviceWorkerUrl } from '../../../../constants';
-import ServiceWorkerInstallationState from '../../../../enums/serviceWorkerState';
-import useServiceWorkerRegistration from '../../../hooks/useServiceWorkerRegistration';
 import SendNotificationButton from '../../send-notification-button';
 
 export default function AppContent() {

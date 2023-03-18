@@ -1,4 +1,4 @@
-import { BrowserPermission } from '@tix-factory/push-notifications';
+import BrowserPermission from '../../enums/browserPermission';
 import { useEffect, useState } from 'react';
 
 // This hook can be used to fetch the current state of whether or not notification

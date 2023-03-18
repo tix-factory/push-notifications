@@ -1,15 +1,18 @@
-import { BrowserPermission } from '@tix-factory/push-notifications';
 import { useEffect, useState } from 'react';
-import { pushPublicKey, serviceWorkerUrl } from '../../constants';
 import PushSubscriptionState from '../../enums/pushSubscriptionState';
-import ServiceWorkerInstallationState from '../../enums/serviceWorkerState';
+import ServiceWorkerInstallationState from '../../enums/serviceWorkerInstallationState';
+import BrowserPermission from '../../enums/browserPermission';
 import useNotificationPermission from './useNotificationPermission';
 import useServiceWorkerRegistration from './useServiceWorkerRegistration';
+import PushNotificationSubscriptionHookInput from '../../types/pushNotificationSubscriptionHookInput';
 
 // A hook for obtaining a push subscription, intended for notifications.
 // TODO: This hook doesn't support push subscription changes.
 // See: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope/pushsubscriptionchange_event
-export default function usePushNotificationSubscription(): [
+export default function usePushNotificationSubscription({
+  serviceWorkerUrl,
+  pushSubscriptionOptions,
+}: PushNotificationSubscriptionHookInput): [
   PushSubscription | null,
   PushSubscriptionState
 ] {
@@ -102,10 +105,7 @@ export default function usePushNotificationSubscription(): [
           setPushSubscriptionState(PushSubscriptionState.Available);
         } else {
           serviceWorkerRegistration.pushManager
-            .subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: pushPublicKey,
-            })
+            .subscribe(pushSubscriptionOptions)
             .then((newSubscription) => {
               if (disposed) {
                 return;
