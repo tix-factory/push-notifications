@@ -3,11 +3,18 @@ name: '@tix-factory/push-notifications'
 on:
   # Ensure the build runs on pull requests.
   pull_request:
+    paths:
+      - '.github/workflows/push-notifications-npm.yml'
+      - 'libs/js/push-notifications/**'
 
   # Ensure the build runs when pushed to the main branch.
   push:
     branches:
       - main
+
+    paths:
+      - '.github/workflows/push-notifications-npm.yml'
+      - 'libs/js/push-notifications/**'
 
 jobs:
   build:
