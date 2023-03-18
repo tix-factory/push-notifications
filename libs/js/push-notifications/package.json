@@ -2,7 +2,8 @@
   "name": "@tix-factory/push-notifications",
   "version": "1.0.0",
   "description": "This module can be used to hook into the browser push API and service workers. Intended to be used with React.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc"
   },

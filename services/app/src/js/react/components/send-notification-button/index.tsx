@@ -1,6 +1,6 @@
 import { Alert, Box, Button, CircularProgress, Link } from '@mui/material';
 import { Fragment, useEffect, useState } from 'react';
-import BrowserPermission from '../../../enums/browserPermission';
+import { BrowserPermission } from '@tix-factory/push-notifications';
 import NotificationSendStatus from '../../../enums/notificationSendStatus';
 import PushSubscriptionState from '../../../enums/pushSubscriptionState';
 import ServerRegistrationState from '../../../enums/serverRegistrationState';

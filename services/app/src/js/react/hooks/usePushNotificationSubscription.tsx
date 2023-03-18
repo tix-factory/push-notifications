@@ -1,6 +1,6 @@
+import { BrowserPermission } from '@tix-factory/push-notifications';
 import { useEffect, useState } from 'react';
 import { pushPublicKey, serviceWorkerUrl } from '../../constants';
-import BrowserPermission from '../../enums/browserPermission';
 import PushSubscriptionState from '../../enums/pushSubscriptionState';
 import ServiceWorkerInstallationState from '../../enums/serviceWorkerState';
 import useNotificationPermission from './useNotificationPermission';
