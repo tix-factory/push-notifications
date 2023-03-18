@@ -34,10 +34,12 @@ jobs:
         run: |
           docker-compose up -d
           sleep 5
+        env:
+          VAPID__EMAIL_ADDRESS: 'example@example.com'
 
       - name: '🔌 Ensure Connectivity (api)'
         run: >-
-          curl -v --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_API_PORT }}/health
+          curl -v --fail http://localhost:${{ env.PUSH_NOTIFICATIONS_API_PORT }}/api/v1/push-notifications/metadata
 
       - name: '🔌 Ensure Connectivity (app)'
         run: >-
