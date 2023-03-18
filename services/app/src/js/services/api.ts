@@ -1,6 +1,10 @@
-import { serializePushSubscription } from '@tix-factory/push-notifications';
+import {
+  serializePushSubscription,
+  translatePublicKey,
+} from '@tix-factory/push-notifications';
 
 let registeredEndpoints: { [endpoint: string]: Date } = {};
+let publicKey: Uint8Array | null = null;
 
 const register = async (pushSubscription: PushSubscription): Promise<void> => {
   const serializedPushSubscription = await serializePushSubscription(
@@ -43,4 +47,18 @@ const sendPushNotification = async (): Promise<void> => {
   }
 };
 
-export { register, sendPushNotification };
+const loadPublicKey = async (): Promise<Uint8Array> => {
+  if (publicKey) {
+    return Promise.resolve(publicKey);
+  }
+
+  const response = await fetch('/api/v1/push-notifications/metadata');
+  if (!response.ok) {
+    throw new Error('Failed to load push notifications public key.');
+  }
+
+  const result = await response.json();
+  return (publicKey = translatePublicKey(result.publicKey));
+};
+
+export { register, loadPublicKey, sendPushNotification };

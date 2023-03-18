@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -61,32 +62,40 @@ public class Startup
         // Add push notification dependencies
         services.AddSingleton(sp =>
         {
-            // VAPID details are used to identify ourselves with the push notification server.
-            // We must have a public key, private key, and email address.
-            // See also: https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/
-            var configuration = sp.GetRequiredService<IConfiguration>();
-            var vapidConfiguration = configuration.GetSection("VAPID");
-
-            var publicKey = vapidConfiguration.GetValue<string>("PUBLIC_KEY");
-            var privateKey = vapidConfiguration.GetValue<string>("PRIVATE_KEY");
-            var emailAddress = vapidConfiguration.GetValue<string>("EMAIL_ADDRESS");
-
-            if (string.IsNullOrWhiteSpace(publicKey)
-                || string.IsNullOrWhiteSpace(privateKey)
-                || string.IsNullOrWhiteSpace(emailAddress))
-            {
-                // We'll look for this case in the controller, before attempting to send the notification.
-                return null;
-            }
-
+            var vapidConfiguration = sp.GetRequiredService<VapidConfiguration>();
             var webPushClient = new WebPushClient();
 
             webPushClient.SetVapidDetails(
-                subject: $"mailto:{emailAddress}",
-                publicKey: publicKey,
-                privateKey: privateKey);
+                subject: $"mailto:{vapidConfiguration.EmailAddress}",
+                publicKey: vapidConfiguration.PublicKey,
+                privateKey: vapidConfiguration.PrivateKey);
 
             return webPushClient;
+        });
+
+        services.AddSingleton(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var vapidSettings = new VapidConfiguration();
+            configuration.Bind("VAPID", vapidSettings);
+
+            if (string.IsNullOrWhiteSpace(vapidSettings.EmailAddress))
+            {
+                throw new ApplicationException("VAPID EMAIL_ADDRESS is requried to start the application.");
+            }
+
+            if (string.IsNullOrWhiteSpace(vapidSettings.PublicKey) && string.IsNullOrWhiteSpace(vapidSettings.PrivateKey))
+            {
+                var keys = VapidHelper.GenerateVapidKeys();
+                vapidSettings.PublicKey = keys.PublicKey;
+                vapidSettings.PrivateKey = keys.PrivateKey;
+            }
+            else
+            {
+                throw new ApplicationException("PUBLIC_KEY or PRIVATE_KEY is not set");
+            }
+
+            return vapidSettings;
         });
     }
 

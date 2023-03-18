@@ -9,9 +9,16 @@ import {
 import NotificationSendStatus from '../../../enums/notificationSendStatus';
 import ServerRegistrationState from '../../../enums/serverRegistrationState';
 import { register, sendPushNotification } from '../../../services/api';
-import { pushPublicKey, serviceWorkerUrl } from '../../../constants';
+import { serviceWorkerUrl } from '../../../constants';
 
-export default function SendNotificationButton() {
+type SendNotificationButtonInput = {
+  // The public key to create the push subscription with.
+  pushPublicKey: Uint8Array;
+};
+
+export default function SendNotificationButton({
+  pushPublicKey,
+}: SendNotificationButtonInput) {
   const [notificationPermission, requestNotificationPermission] =
     useNotificationPermission();
   const [pushSubscription, pushSubscriptionState] =
