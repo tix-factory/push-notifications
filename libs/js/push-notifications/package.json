@@ -17,5 +17,8 @@
   },
   "bugs": {
     "url": "https://github.com/tix-factory/push-notifications/issues"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2"
   }
 }
