@@ -1,19 +1,26 @@
 # Setup runtime images
 FROM node:19 AS base
 
-# Setup build image
-FROM node:19 AS build
+# Setup image to build the published module with
+FROM node:19 AS build-module
 
-# Copy files over
-COPY ./services/app ./services/app
+# Copy the files over
 COPY ./libs/js ./libs/js
 
-# Install the module packages
+# Install the packages
 WORKDIR /libs/js/push-notifications
 RUN npm ci
 
 # Build the module
 RUN npm run build
+
+# Setup build image
+FROM node:19 AS build
+
+# Copy files over
+COPY --from=build-module /libs/js/push-notifications/dist /libs/js/push-notifications/dist
+COPY --from=build-module /libs/js/push-notifications/package.json /libs/js/push-notifications/package.json
+COPY ./services/app ./services/app
 
 # Install the packages
 WORKDIR /services/app

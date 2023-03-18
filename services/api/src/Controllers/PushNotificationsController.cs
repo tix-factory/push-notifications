@@ -161,7 +161,7 @@ public class PushNotificationsController : Controller
             Title = "Hello, world!",
             Message = "This notification was sent using the push API.",
             Link = new Uri("https://demo.push-notifications.app?notification_clicked=true"),
-            ButtonLink = new Uri("https://github.com/tix-factory/push-notifications-demo/issues"),
+            ButtonLink = new Uri("https://github.com/tix-factory/push-notifications/issues"),
             Icon = new Uri("https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f514.png")
         };
 
