@@ -8,5 +8,8 @@ export { default as useNotificationPermission } from './react/hooks/useNotificat
 export { default as usePushNotificationSubscription } from './react/hooks/usePushNotificationSubscription';
 export { default as useServiceWorkerRegistration } from './react/hooks/useServiceWorkerRegistration';
 
+// export utils
+export { default as translatePublicKey } from './utils/translatePublicKey';
+
 // export types
 export type { default as PushNotificationSubscriptionHookInput } from './types/pushNotificationSubscriptionHookInput';
