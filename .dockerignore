@@ -1,0 +1,4 @@
+# Ensure that we have to rebuild the push-notifications module when we use it locally, in docker.
+
+libs/js/push-notifications/node_modules/
+libs/js/push-notifications/dist/

@@ -1,0 +1,58 @@
+name: '@tix-factory/push-notifications'
+
+on:
+  # Ensure the build runs on pull requests.
+  pull_request:
+    paths:
+      - '.github/workflows/push-notifications-npm.yml'
+      - 'libs/js/push-notifications/**'
+
+  # Ensure the build runs when pushed to the main branch.
+  push:
+    branches:
+      - main
+
+    paths:
+      - '.github/workflows/push-notifications-npm.yml'
+      - 'libs/js/push-notifications/**'
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    environment: ${{ github.event_name == 'push' && 'release' || '' }}
+
+    steps:
+      # Setup
+      - name: '📥 Clone Repository'
+        uses: actions/checkout@v3
+
+      - name: '🟩 Setup Node'
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: 'https://registry.npmjs.org'
+          token: ${{ secrets.NPMJS_ACCESS_TOKEN }}
+
+      # Build
+      - name: '📜 Copy License'
+        run: |
+          cp LICENSE ./libs/js/push-notifications
+
+      - name: '🚚 Install Packages'
+        run: |
+          npm ci
+        working-directory: libs/js/push-notifications
+
+      - name: '🏗️ Build'
+        run: |
+          npm run build
+        working-directory: libs/js/push-notifications
+
+      # Publish
+      - name: '📤 Upload to npm'
+        run: >-
+          npm publish
+          --access public
+          ${{ github.event_name == 'push' && '' || '--dry-run' }}
+        working-directory: libs/js/push-notifications

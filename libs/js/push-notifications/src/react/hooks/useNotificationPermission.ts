@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import BrowserPermission from '../../enums/browserPermission';
+import { useEffect, useState } from 'react';
 
 // This hook can be used to fetch the current state of whether or not notification
 // permission has been granted by the human to the browser.
