@@ -10,6 +10,8 @@ export { default as useServiceWorkerRegistration } from './react/hooks/useServic
 
 // export utils
 export { default as translatePublicKey } from './utils/translatePublicKey';
+export { default as serializePushSubscription } from './utils/serializePushSubscription';
 
 // export types
 export type { default as PushNotificationSubscriptionHookInput } from './types/pushNotificationSubscriptionHookInput';
+export type { default as SerializedPushSubscription } from './types/serializedPushSubscription';
