@@ -8,17 +8,11 @@ This is a demo project, the authententication mechanism is not setup to share ke
 
 ## :gear: Configuration
 
-The [appsettings.json](./src/appsettings.json#L12) contains the `PUBLIC_KEY`, which also exists in [pushPublicKey.ts](../app/src/js/constants//pushPublicKey.ts).
+The `VAPID__EMAIL_ADDRESS` environment variable must be set, and is sent to the browser push notification server, as a form of voluntary authentication. It can be used to contact the server owner if needed.
 
-When you run this application you must also have a `PRIVATE_KEY` and `EMAIL_ADDRESS` set in the `VAPID` configuration section.
+Additionally, we will need a `VAPID__PUBLIC_KEY` and `VAPID__PRIVATE_KEY`. The `PRIVATE_KEY` must pair with the `PUBLIC_KEY`.
+If these configurations are not provided, they will be generated when the server starts.
 
-These can be injedcted with the following environment variables:
-
--   `VAPID__PRIVATE_KEY`
--   `VAPID__EMAIL_ADDRESS`
-
-The `PRIVATE_KEY` must pair with the `PUBLIC_KEY`. For the purposes of this demo, [web-push-codelab](https://web-push-codelab.glitch.me/) can be used to generate these keys.
-
-The `EMAIL_ADDRESS` is sent to the browser push notification server, as a form of voluntary authentication. It can be used to contact the server owner if needed.
+[web-push-codelab](https://web-push-codelab.glitch.me/) is a helpful site that can be used to generate these keys.
 
 See more on `VAPID`: [Sending VAPID identified web push notifications](https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/)
