@@ -16,7 +16,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.4.0",
     "@mui/material": "^9.4.0",
-    "@tix-factory/push-notifications": "^1.1.0",
+    "@tix-factory/push-notifications": "file:../../libs/js/push-notifications",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
