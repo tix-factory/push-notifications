@@ -17,10 +17,9 @@ export default {
    *
    * @param request - The request submitted to the Worker from the client
    * @param env - The interface to reference bindings declared in wrangler.jsonc
-   * @param _ctx - The execution context of the Worker
    * @returns The response to be sent back to the client
    */
-  async fetch(request, env, _ctx): Promise<Response> {
+  async fetch(request, env): Promise<Response> {
     const url = new URL(request.url);
 
     // 1. Backend Routing
