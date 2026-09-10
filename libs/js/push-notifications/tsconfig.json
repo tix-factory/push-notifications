@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "nodenext",
+    "target": "es2022",
+    "module": "es2022",
     "declaration": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "nodenext"
+    "moduleResolution": "bundler"
   },
   "include": ["src"],
   "exclude": ["node_modules"]

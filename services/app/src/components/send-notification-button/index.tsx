@@ -1,19 +1,19 @@
 import { Alert, Box, Button, CircularProgress, Link } from '@mui/material';
-import { Fragment, useEffect, useState } from 'react';
 import {
   BrowserPermission,
   PushSubscriptionState,
   useNotificationPermission,
   usePushNotificationSubscription,
 } from '@tix-factory/push-notifications';
-import NotificationSendStatus from '../../../enums/notificationSendStatus';
-import ServerRegistrationState from '../../../enums/serverRegistrationState';
-import { register, sendPushNotification } from '../../../services/api';
-import { serviceWorkerUrl } from '../../../constants';
+import { Fragment, useEffect, useState } from 'react';
+import { serviceWorkerUrl } from '../../constants';
+import NotificationSendStatus from '../../enums/notificationSendStatus';
+import ServerRegistrationState from '../../enums/serverRegistrationState';
+import { register, sendPushNotification } from '../../services/api';
 
 type SendNotificationButtonInput = {
-  // The public key to create the push subscription with.
-  pushPublicKey: Uint8Array;
+  // The (base64 encoded) public key to create the push subscription with.
+  pushPublicKey: string;
 };
 
 export default function SendNotificationButton({
@@ -30,7 +30,7 @@ export default function SendNotificationButton({
       },
     });
   const [registrationState, setRegistrationState] = useState(
-    ServerRegistrationState.Loading
+    ServerRegistrationState.Loading,
   );
   const [sendStatus, setSendStatus] = useState(NotificationSendStatus.None);
 
@@ -49,7 +49,7 @@ export default function SendNotificationButton({
         console.error(
           'Failed to register the push subscription',
           err,
-          pushSubscription
+          pushSubscription,
         );
         setRegistrationState(ServerRegistrationState.Error);
       });
@@ -60,7 +60,7 @@ export default function SendNotificationButton({
     await requestNotificationPermission();
   };
 
-  const sendPushNotificationClicked = async (event: React.MouseEvent) => {
+  const sendPushNotificationClicked = async () => {
     setSendStatus(NotificationSendStatus.Sending);
 
     try {

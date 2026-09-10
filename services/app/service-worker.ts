@@ -27,6 +27,7 @@ self.addEventListener('push', async (event) => {
 
     console.log('A push message has been sent to the service worker.', data);
 
+    // @ts-ignore: https://github.com/microsoft/TypeScript-DOM-lib-generator/issues/1725#issuecomment-5618439427
     const actions: NotificationAction[] = [];
     data.buttons.forEach((buttonText: string, i: number) => {
       actions.push({
@@ -43,12 +44,13 @@ self.addEventListener('push', async (event) => {
         link: data.link,
         buttonLink: data.buttonLink,
       },
+      // @ts-ignore: https://github.com/microsoft/TypeScript-DOM-lib-generator/issues/1725#issuecomment-5618439427
       actions: actions,
     });
   } catch (ex) {
     console.warn(
       'An unexpected error has occurred parsing the push message.',
-      ex
+      ex,
     );
   }
 });
@@ -57,7 +59,7 @@ self.addEventListener('notificationclick', (event) => {
   console.log(
     'A notification has been clicked!',
     event.notification,
-    event.action
+    event.action,
   );
 
   if (event.action === 'button_0' && event.notification.data.buttonLink) {
@@ -70,6 +72,3 @@ self.addEventListener('notificationclick', (event) => {
 self.addEventListener('notificationclose', (event) => {
   console.log('A notification has been closed!', event.notification);
 });
-
-// Export something so the script can be combined.
-export {};

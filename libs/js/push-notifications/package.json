@@ -4,6 +4,7 @@
   "description": "This module can be used to hook into the browser push API and service workers. Intended to be used with React.",
   "browser": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc"
   },
