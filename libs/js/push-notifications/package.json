@@ -1,6 +1,6 @@
 {
   "name": "@tix-factory/push-notifications",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "This module can be used to hook into the browser push API and service workers. Intended to be used with React.",
   "browser": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,11 +8,11 @@
     "build": "tsc"
   },
   "peerDependencies": {
-    "@types/react": "^18.0.28",
-    "react": "^18.2.0"
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.2"
+    "typescript": "^7.0.2"
   },
   "repository": {
     "type": "git",
