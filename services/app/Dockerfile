@@ -13,6 +13,8 @@ WORKDIR /libs/js/push-notifications
 RUN npm ci
 
 WORKDIR /services/app
+RUN npm uninstall @tix-factory/push-notifications
+RUN npm install @tix-factory/push-notifications@file:../../libs/js/push-notifications
 RUN npm ci
 
 # Build the app
