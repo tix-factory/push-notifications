@@ -7,7 +7,8 @@
     "dev": "vite",
     "start": "wrangler dev",
     "deploy": "wrangler deploy",
-    "build": "tsc --project ../../libs/js/push-notifications && tsc -b && vite build",
+    "ci": "npm --prefix ../../libs/js/push-notifications ci && tsc --project ../../libs/js/push-notifications && npm run build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
