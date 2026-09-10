@@ -5,6 +5,7 @@ This repository exists to serve as a demo for the [Push API](https://developer.m
 This repository also hosts a published [npm module](https://www.npmjs.com/package/@tix-factory/push-notifications), which can be used in React projects to hook into some of the push APIs.
 See also: [@tix-factory/push-notifications](./libs/js/push-notifications/)
 
+This demo is currently being hosted using [Cloudflare Workers](https://developers.cloudflare.com/workers/languages/rust/), with a side goal of this project to initialize myself with Rust.
 
 # :nerd_face: Disclaimer
 
