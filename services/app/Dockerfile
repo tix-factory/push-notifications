@@ -9,14 +9,11 @@ COPY ./libs/js ./libs/js
 COPY ./services/app ./services/app
 
 # Install the packages
-WORKDIR /libs/js/push-notifications
-RUN npm ci
-
 WORKDIR /services/app
 RUN npm ci
 
 # Build the app
-RUN npm run build
+RUN npm run ci
 
 # Build runtime image
 FROM base as final
