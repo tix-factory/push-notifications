@@ -9,7 +9,6 @@ export { default as usePushNotificationSubscription } from './react/hooks/usePus
 export { default as useServiceWorkerRegistration } from './react/hooks/useServiceWorkerRegistration';
 
 // export utils
-export { default as translatePublicKey } from './utils/translatePublicKey';
 export { default as serializePushSubscription } from './utils/serializePushSubscription';
 
 // export types
