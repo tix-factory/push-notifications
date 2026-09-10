@@ -22,6 +22,12 @@ jobs:
 
     environment: ${{ github.event_name == 'push' && 'release' || '' }}
 
+    permissions:
+      contents: read
+
+      # Used for npm authentication
+      id-token: write
+
     steps:
       # Setup
       - name: '📥 Clone Repository'
@@ -32,7 +38,6 @@ jobs:
         with:
           node-version: 24
           registry-url: 'https://registry.npmjs.org'
-          token: ${{ secrets.NPMJS_ACCESS_TOKEN }}
 
       # Build
       - name: '📜 Copy License'
