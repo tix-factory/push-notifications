@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: '📥 Clone Repository'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: '🌐 Setup Network'
         run: >-
@@ -32,7 +32,7 @@ jobs:
 
       - name: '🐳 Run'
         run: |
-          docker-compose up -d
+          docker compose up -d
           sleep 5
         env:
           VAPID__EMAIL_ADDRESS: 'example@example.com'
@@ -48,15 +48,15 @@ jobs:
       - name: '🪵 Logs (api)'
         if: ${{ always() }}
         run: >-
-          docker-compose logs api
+          docker compose logs api
 
       - name: '🪵 Logs (app)'
         if: ${{ always() }}
         run: >-
-          docker-compose logs app
+          docker compose logs app
 
       - name: '🛑 Stop Containers'
         run: >-
-          docker-compose rm
+          docker compose rm
           --stop
           --force
