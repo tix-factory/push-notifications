@@ -5,9 +5,7 @@ This repository exists to serve as a demo for the [Push API](https://developer.m
 This repository also hosts a published [npm module](https://www.npmjs.com/package/@tix-factory/push-notifications), which can be used in React projects to hook into some of the push APIs.
 See also: [@tix-factory/push-notifications](./libs/js/push-notifications/)
 
-This demo is intended to be deployed via [DigitalOcean App Platform](https://docs.digitalocean.com/products/app-platform/), for convenience. But the applications are written to be compatible outside of this deployment mechanism.
-
-[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=d9101d673e50&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
+This demo is currently being hosted using [Cloudflare Workers](https://developers.cloudflare.com/workers/languages/rust/), with a side goal of this project to initialize myself with Rust.
 
 # :nerd_face: Disclaimer
 

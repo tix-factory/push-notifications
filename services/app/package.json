@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "wrangler dev",
+    "deploy": "wrangler deploy",
     "build": "tsc --project ../../libs/js/push-notifications && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -31,6 +33,7 @@
     "sass-embedded": "^1.104.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.67.0",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "wrangler": "^4.131.0"
   }
 }

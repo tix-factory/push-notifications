@@ -3,8 +3,6 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "es2023",
     "lib": ["ES2023"],
-    "types": ["node"],
-    "skipLibCheck": true,
 
     /* Bundler mode */
     "module": "nodenext",
@@ -17,7 +15,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true,
+    "types": ["node", "./worker-configuration.d.ts"]
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "node-server"]
 }
