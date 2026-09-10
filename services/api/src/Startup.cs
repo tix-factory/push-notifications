@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using WebPush;
 
@@ -130,7 +129,7 @@ public class Startup
     /// <param name="options">The <see cref="SwaggerGenOptions"/>.</param>
     private void ConfigureSwagger(SwaggerGenOptions options)
     {
-        options.SwaggerDoc("v1", new OpenApiInfo
+        options.SwaggerDoc("v1", new()
         {
             Title = "push-notifications-api",
             Version = "v1"

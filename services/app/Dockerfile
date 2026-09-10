@@ -1,31 +1,18 @@
 # Setup runtime images
-FROM node:19 AS base
+FROM node:24 AS base
 
-# Setup image to build the published module with
-FROM node:19 AS build-module
+# Setup build image
+FROM node:24 AS build
 
-# Copy the files over
+# Copy files over
 COPY ./libs/js ./libs/js
+COPY ./services/app ./services/app
 
 # Install the packages
 WORKDIR /libs/js/push-notifications
 RUN npm ci
 
-# Build the module
-RUN npm run build
-
-# Setup build image
-FROM node:19 AS build
-
-# Copy files over
-COPY --from=build-module /libs/js/push-notifications/dist /libs/js/push-notifications/dist
-COPY --from=build-module /libs/js/push-notifications/package.json /libs/js/push-notifications/package.json
-COPY ./services/app ./services/app
-
-# Install the packages
 WORKDIR /services/app
-RUN npm uninstall @tix-factory/push-notifications
-RUN npm install @tix-factory/push-notifications@file:../../libs/js/push-notifications
 RUN npm ci
 
 # Build the app
@@ -42,6 +29,6 @@ WORKDIR /app
 RUN npm ci
 
 # Copy the created files over to the final image.
-COPY --from=build /services/app/build /app/build
+COPY --from=build /services/app/dist /app/build
 
 ENTRYPOINT ["npx", "serve", "/app/build"]

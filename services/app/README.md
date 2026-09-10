@@ -4,4 +4,4 @@ This is the frontend web app that will be served to browsers, with UX to send a 
 
 # :bow: Implementation
 
-This app uses [Material UI](https://mui.com/) for a quick, simple design, on top of [React](https://reactjs.org/).
+This app uses [Material UI](https://mui.com/) for a quick, simple design, on top of [React](https://reactjs.org/), via [vite](https://vite.dev/).

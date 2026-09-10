@@ -4,14 +4,14 @@ import {
   useServiceWorkerRegistration,
 } from '@tix-factory/push-notifications';
 import { Fragment, useEffect, useState } from 'react';
-import { serviceWorkerUrl } from '../../../../constants';
-import { loadPublicKey } from '../../../../services/api';
+import { serviceWorkerUrl } from '../../../constants';
+import { loadPublicKey } from '../../../services/api';
 import SendNotificationButton from '../../send-notification-button';
 
 export default function AppContent() {
   const [, serviceWorkerInstallationState] =
     useServiceWorkerRegistration(serviceWorkerUrl);
-  const [pushPublicKey, setPushPublicKey] = useState<Uint8Array | null>(null);
+  const [pushPublicKey, setPushPublicKey] = useState<string | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {

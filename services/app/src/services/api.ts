@@ -1,15 +1,13 @@
-import {
-  serializePushSubscription,
-  translatePublicKey,
-} from '@tix-factory/push-notifications';
+import { serializePushSubscription } from '@tix-factory/push-notifications';
 
-let registeredEndpoints: { [endpoint: string]: Date } = {};
-let publicKey: Uint8Array | null = null;
+const registeredEndpoints: { [endpoint: string]: Date } = {};
+let publicKey: string | null = null;
 
 const register = async (pushSubscription: PushSubscription): Promise<void> => {
-  const serializedPushSubscription = await serializePushSubscription(
-    pushSubscription
-  );
+  const serializedPushSubscription =
+    await serializePushSubscription(pushSubscription);
+
+  // eslint-disable-next-line no-prototype-builtins
   if (registeredEndpoints.hasOwnProperty(serializedPushSubscription.endpoint)) {
     // We've already registered this endpoint, don't do it again - prevent spam to the server.
     return;
@@ -47,7 +45,7 @@ const sendPushNotification = async (): Promise<void> => {
   }
 };
 
-const loadPublicKey = async (): Promise<Uint8Array> => {
+const loadPublicKey = async (): Promise<string> => {
   if (publicKey) {
     return Promise.resolve(publicKey);
   }
@@ -58,7 +56,7 @@ const loadPublicKey = async (): Promise<Uint8Array> => {
   }
 
   const result = await response.json();
-  return (publicKey = translatePublicKey(result.publicKey));
+  return (publicKey = result.publicKey);
 };
 
-export { register, loadPublicKey, sendPushNotification };
+export { loadPublicKey, register, sendPushNotification };
