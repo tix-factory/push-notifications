@@ -8,14 +8,10 @@ FROM node:24 AS build
 COPY ./libs/js ./libs/js
 COPY ./services/app ./services/app
 
-# Install the library packages
+# Install the packages
 WORKDIR /libs/js/push-notifications
 RUN npm ci
 
-# Build the library
-RUN npm run build
-
-# Install the app packages
 WORKDIR /services/app
 RUN npm uninstall @tix-factory/push-notifications
 RUN npm install @tix-factory/push-notifications@file:../../libs/js/push-notifications
