@@ -26,7 +26,7 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       return new Response(
         JSON.stringify({
-          error: 'Unimplemented',
+          error: 'unimplemented',
         }),
         {
           headers: { 'Content-Type': 'application/json' },
