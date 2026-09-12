@@ -75,12 +75,6 @@ jobs:
         with:
           node-version: 24
 
-      - name: Get First Line of Commit Message
-        id: commit_info
-        run: |
-          COMMIT_FIRST_LINE=$(git log -1 --pretty=format:"%s")
-          echo "COMMIT_TITLE=$COMMIT_FIRST_LINE" >> $GITHUB_ENV
-
       - name: '🧶 npm ci'
         run: |-
           npm ci
@@ -97,5 +91,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: >-
             ${{ github.event_name == 'push' && 'deploy' || 'deploy --dry-run' }}
-            --message $COMMIT_TITLE
+            --message "Deployed by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           workingDirectory: 'services/app'
