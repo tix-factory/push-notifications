@@ -80,13 +80,14 @@ jobs:
           npm ci
         working-directory: services/app
 
-      - name: '🏗️ Build'
+      - name: '🏗️ Build (app)'
         run: |-
-          npm ci
+          npm run ci
         working-directory: services/app
 
       - name: '🚅 Deploy'
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: ${{ github.event_name == 'push' && 'deploy' || 'deploy --dry-run' }}
           workingDirectory: 'services/app'
