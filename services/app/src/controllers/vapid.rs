@@ -1,13 +1,16 @@
 use axum::{
     body::Body,
-    http::{Response},
+    http::{Response, StatusCode},
     response::IntoResponse,
     Json
 };
+use axum_extra::extract::{cookie::Cookie, CookieJar};
 use serde::Serialize;
 use worker::{Env};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use crate::utils::{read_public_key};
+
+const AUTH_COOKIE_NAME: &str = "auth_token";
 
 #[derive(Serialize)]
 struct Metadata {
@@ -26,4 +29,15 @@ pub async fn metadata(env: Env) -> Response<Body> {
     (
         Json(body),
     ).into_response()
+}
+
+/// Forgets the push notification registration information.
+pub async fn unregister(cookies: CookieJar) -> StatusCode {
+    let cookie = Cookie::build((AUTH_COOKIE_NAME, ""))
+        .path("/")
+        .max_age(time::Duration::ZERO)
+        .build();
+    let _ = cookies.remove(cookie);
+
+    StatusCode::NO_CONTENT
 }
