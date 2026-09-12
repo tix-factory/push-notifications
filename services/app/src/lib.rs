@@ -30,7 +30,7 @@ async fn fetch(
 
 pub async fn metadata() -> Response<Body> {
     let body = ErrorBody {
-        error: "rust-not-implemented".to_string(),
+        error: "not-implemented-rust".to_string(),
     };
 
     (
