@@ -1,3 +1,5 @@
+mod utils;
+
 use axum::{
     body::Body,
     http::{Response},
@@ -9,8 +11,8 @@ use axum::{
 use serde::Serialize;
 use tower_service::Service;
 use worker::{HttpRequest, Env, Context, Result, event};
-use p256::{pkcs8::DecodePublicKey,PublicKey};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
+use crate::utils::read_public_key;
 
 #[derive(Serialize)]
 struct Metadata {
@@ -32,10 +34,9 @@ async fn fetch(
 }
 
 pub async fn metadata(env: Env) -> Response<Body> {
-    let raw_public_key = env.var("VAPID__PUBLIC_KEY").expect("VAPID__PUBLIC_KEY is not set.").to_string();
-    let public_key = PublicKey::from_public_key_pem(&raw_public_key);
+    let public_key = read_public_key(env);
     let body = Metadata {
-        public_key: URL_SAFE_NO_PAD.encode(public_key.unwrap().to_sec1_bytes())
+        public_key: URL_SAFE_NO_PAD.encode(public_key.to_sec1_bytes())
     };
 
     (
