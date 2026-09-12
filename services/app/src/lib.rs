@@ -13,8 +13,9 @@ use crate::controllers::vapid::{metadata, unregister};
 
 fn router(env: Env) -> Router {
     Router::new()
-        .route("/api/v1/push-notifications/metadata", get(|| metadata(env)))
+        .route("/api/v1/push-notifications/metadata", get(metadata))
         .route("/api/v1/push-notifications/unregister", delete(unregister))
+        .with_state(env)
 }
 
 #[event(fetch)]

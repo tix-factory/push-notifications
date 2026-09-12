@@ -1,5 +1,6 @@
 use axum::{
     body::Body,
+    extract::State,
     http::{Response, StatusCode},
     response::IntoResponse,
     Json
@@ -20,7 +21,7 @@ struct Metadata {
 }
 
 /// The metadata endpoint used by the web app to load the VAPID public key.
-pub async fn metadata(env: Env) -> Response<Body> {
+pub async fn metadata(State(env): State<Env>) -> Response<Body> {
     let public_key = read_public_key(env);
     let body = Metadata {
         public_key: URL_SAFE_NO_PAD.encode(public_key.to_sec1_bytes())
