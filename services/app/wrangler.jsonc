@@ -5,8 +5,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "push-notifications-demo",
-  "main": "node-server/index.ts",
+  "main": "build/worker/shim.mjs",
   "compatibility_date": "2026-09-07",
+  "build": {
+    "command": "cargo install -q \"worker-build@^0.8\" && worker-build --release --panic-unwind",
+  },
   "assets": {
     // The path to the directory containing the `index.html` file to be served at `/`
     "directory": "./dist",
