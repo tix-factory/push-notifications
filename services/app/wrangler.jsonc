@@ -13,6 +13,7 @@
   "containers": [
     {
       "class_name": "RustContainer",
+      "instance_type": "lite",
       "image": "./Dockerfile",
       "max_instances": 1,
     },

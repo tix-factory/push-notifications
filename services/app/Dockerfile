@@ -31,9 +31,13 @@ COPY --from=build /services/app/dist /app/build
 ENTRYPOINT ["npx", "serve", "/app/build"]
 
 # Rust application
-FROM rust:1.98.1-slim AS server
+FROM rust:1.98.1 AS server-build
 COPY . /services/app
 WORKDIR /services/app
 RUN cargo build --release
+
+FROM rust:1.98.1-slim AS server
+WORKDIR /app
+COPY --from=server-build /services/app/target/release/push-notifications-demo .
 EXPOSE 8080
-CMD ["./target/release/push-notifications-demo"]
+CMD ["./push-notifications-demo"]
