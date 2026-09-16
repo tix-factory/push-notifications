@@ -1,18 +1,22 @@
 {
   "name": "push-notifications-demo",
   "private": true,
-  "version": "1.1.0",
+  "version": "2.0.0",
+  "description": "A demo application to send browser push notifications, using VAPID.",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "start": "wrangler dev",
+    "cf-typegen": "wrangler types",
     "deploy": "wrangler deploy",
+    "e2e:dev": "wrangler dev --enable-containers=false",
     "ci": "npm --prefix ../../libs/js/push-notifications ci && tsc --project ../../libs/js/push-notifications && npm run build",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cloudflare/containers": "0.0.30",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.4.0",
