@@ -26,6 +26,11 @@ jobs:
           docker network create tix-factory
         continue-on-error: true
 
+      - name: '🔑 Generate Keys'
+        run: >-
+          sh secrets.sh
+        working-directory: 'services/app'
+
       - name: '🏗️ Build'
         run: >-
           docker compose build
