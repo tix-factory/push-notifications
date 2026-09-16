@@ -23,6 +23,7 @@ services:
     build:
       context: '.'
       dockerfile: './services/app/Dockerfile'
+      target: 'final'
 
     container_name: 'app'
 

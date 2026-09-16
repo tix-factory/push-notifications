@@ -14,12 +14,10 @@ Run these commands to generate, and set the VAPID keys for the app.
 
 ```sh
 # Generate the keys
-openssl genpkey -out auth_private_key.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
-openssl ecparam -genkey -name prime256v1 | openssl ec -out vapid_keypair.pem
-openssl ec -in vapid_keypair.pem -pubout -out public_key.pem
-openssl ec -in vapid_keypair.pem -out private_key.pem
+sh secrets.sh
 
 # Save the keys to the Cloudflare worker
+cat auth_private_key.pem | wrangler secret put JWT__PRIVATE_KEY
 cat private_key.pem | wrangler secret put VAPID__PRIVATE_KEY
 cat public_key.pem | wrangler secret put VAPID__PUBLIC_KEY
 

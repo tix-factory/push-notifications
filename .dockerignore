@@ -1,11 +1,14 @@
-# Ignore build files
+# Secrets
+.dev.vars
+*.pem
 
+# Build foo
 .idea/
 .wrangler/
-services/app/build/
-services/app/dist/
-services/app/target/
-services/app/node_modules/
+build/
+dist/
+node_modules/
+target/
 
 # Ensure that we have to rebuild the push-notifications module when we use it locally, in docker.
 

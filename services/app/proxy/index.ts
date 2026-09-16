@@ -1,39 +1,53 @@
-import { DurableObject } from 'cloudflare:workers';
+import { Container, getContainer } from '@cloudflare/containers';
+import { env } from 'cloudflare:workers';
 
-export class Container extends DurableObject<Env> {
-  container: globalThis.Container;
-  monitor?: Promise<unknown>;
+export class RustContainer extends Container<Env> {
+  // Port the container listens on (default: 8080)
+  defaultPort = 8080;
 
-  constructor(ctx: DurableObjectState, env: Env) {
-    super(ctx, env);
-    this.container = ctx.container!;
-    void this.ctx.blockConcurrencyWhile(async () => {
-      if (!this.container.running) this.container.start();
-    });
+  // Time before container sleeps due to inactivity (default: 30s)
+  sleepAfter = '30s';
+
+  // Environment variables passed to the container
+  envVars = {
+    JWT__PRIVATE_KEY: env.JWT__PRIVATE_KEY,
+    VAPID__EMAIL_ADDRESS: env.VAPID__EMAIL_ADDRESS,
+    VAPID__PUBLIC_KEY: env.VAPID__PUBLIC_KEY,
+    VAPID__PRIVATE_KEY: env.VAPID__PRIVATE_KEY,
+  };
+
+  // Optional lifecycle hooks
+  override onStart() {
+    console.log('Container successfully started');
   }
 
-  async fetch(req: Request) {
-    try {
-      return await this.container
-        .getTcpPort(8080)
-        .fetch(req.url.replace('https:', 'http:'), req);
-    } catch (err) {
-      return new Response(`${this.ctx.id.toString()}: ${err.message}`, {
-        status: 500,
-      });
-    }
+  override onStop() {
+    console.log('Container successfully shut down');
+  }
+
+  override onError(error: unknown) {
+    console.log('Container error:', error);
   }
 }
 
 export default {
-  async fetch(request, env): Promise<Response> {
-    try {
-      return await env.CONTAINER.get(env.CONTAINER.idFromName('fetcher')).fetch(
-        request,
-      );
-    } catch (err) {
-      console.error('Error fetch:', err.message);
-      return new Response(err.message, { status: 500 });
+  /**
+   * This is the standard fetch handler for a Cloudflare Worker
+   *
+   * @param request - The request submitted to the Worker from the client
+   * @param env - The interface to reference bindings declared in wrangler.jsonc
+   * @param _ctx - The execution context of the Worker
+   * @returns The response to be sent back to the client
+   */
+  async fetch(request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    // 1. Backend Routing
+    if (url.pathname.startsWith('/api/')) {
+      const container = getContainer(env.RUST_CONTAINER);
+      return await container.fetch(request);
     }
+
+    return env.ASSETS.fetch(request);
   },
 } satisfies ExportedHandler<Env>;

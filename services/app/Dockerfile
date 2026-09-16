@@ -16,7 +16,7 @@ RUN npm ci
 RUN npm run ci
 
 # Build runtime image
-FROM base as final
+FROM base AS final
 
 # Copy the package.json for the final image.
 COPY ./services/app/docker /app
