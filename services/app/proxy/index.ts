@@ -10,7 +10,10 @@ export class RustContainer extends Container<Env> {
 
   // Environment variables passed to the container
   envVars = {
+    JWT__PRIVATE_KEY: env.JWT__PRIVATE_KEY,
     VAPID__EMAIL_ADDRESS: env.VAPID__EMAIL_ADDRESS,
+    VAPID__PUBLIC_KEY: env.VAPID__PUBLIC_KEY,
+    VAPID__PRIVATE_KEY: env.VAPID__PRIVATE_KEY,
   };
 
   // Optional lifecycle hooks
