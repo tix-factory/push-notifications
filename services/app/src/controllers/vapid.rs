@@ -1,3 +1,5 @@
+use std::env;
+use std::sync::LazyLock;
 use axum::{
     body::Body,
     extract::State,
@@ -7,9 +9,8 @@ use axum::{
 };
 use axum_extra::extract::{cookie::Cookie, CookieJar};
 use serde::Serialize;
-use worker::{Env};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
-use crate::utils::{read_public_key};
+use crate::utils::{VAPID_PUBLIC_KEY, EMAIL_ADDRESS};
 
 const AUTH_COOKIE_NAME: &str = "auth_token";
 
@@ -21,10 +22,9 @@ struct Metadata {
 }
 
 /// The metadata endpoint used by the web app to load the VAPID public key.
-pub async fn metadata(State(env): State<Env>) -> Response<Body> {
-    let public_key = read_public_key(env);
+pub async fn metadata() -> Response<Body> {
     let body = Metadata {
-        public_key: URL_SAFE_NO_PAD.encode(public_key.to_sec1_bytes())
+        public_key: URL_SAFE_NO_PAD.encode(VAPID_PUBLIC_KEY.to_sec1_bytes())
     };
 
     (

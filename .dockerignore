@@ -1,3 +1,12 @@
+# Ignore build files
+
+.idea/
+.wrangler/
+services/app/build/
+services/app/dist/
+services/app/target/
+services/app/node_modules/
+
 # Ensure that we have to rebuild the push-notifications module when we use it locally, in docker.
 
 libs/js/push-notifications/node_modules/

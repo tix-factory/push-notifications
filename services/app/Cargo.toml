@@ -3,18 +3,13 @@ name = "push-notifications-demo"
 version = "2.0.0"
 edition = "2021"
 authors = ["Bob Rose <WebGL3D@users.noreply.github.com>"]
-
-[lib]
-crate-type = ["cdylib"]
+publish = false
 
 [dependencies]
-worker = { version = "0.8", features = ['http', 'axum'] }
-worker-macros = { version = "0.8", features = ['http'] }
-axum = { version = "0.8", default-features = false, features = ['json'] }
+axum = { version = "0.8", default-features = true, features = ['json'] }
 axum-extra = { version = "0.12.6", features = ["cookie"] }
-tower-service = "0.3.3"
 serde = { version = "1.0.229", features = ["derive"] }
 p256 = "0.14.0"
 base64 = "0.23.1"
-getrandom = { version = "0.4.3", features = ["wasm_js"] }
 time = "0.3.55"
+tokio = { version = "1.53.1", features = ["full"] }

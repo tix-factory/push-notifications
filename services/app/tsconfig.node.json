@@ -21,5 +21,5 @@
     "skipLibCheck": true,
     "types": ["node", "./worker-configuration.d.ts"]
   },
-  "include": ["vite.config.ts", "node-server"]
+  "include": ["vite.config.ts", "proxy"]
 }
