@@ -20,10 +20,6 @@ sh secrets.sh
 cat auth_private_key.pem | wrangler secret put JWT__PRIVATE_KEY
 cat private_key.pem | wrangler secret put VAPID__PRIVATE_KEY
 cat public_key.pem | wrangler secret put VAPID__PUBLIC_KEY
-
-# Save the keys on disk, for running locally
-# This shouldn't match what's in cloud, you can generate the keys again before running this
-echo "VAPID__PUBLIC_KEY=\"$(cat public_key.pem)\"\nVAPID__PRIVATE_KEY=\"$(cat private_key.pem)\"\nJWT__PRIVATE_KEY=\"$(cat auth_private_key.pem)\"" > .dev.vars
 ```
 
 Obviously the `VAPID__PUBLIC_KEY` is not secret, but keeping it with the private key makes it easier to comprehend what goes with what.

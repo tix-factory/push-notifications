@@ -31,7 +31,7 @@ COPY --from=build /services/app/dist /app/build
 ENTRYPOINT ["npx", "serve", "/app/build"]
 
 # Rust application
-FROM rust:1.98.1 AS server
+FROM rust:1.98.1-slim AS server
 COPY . /services/app
 WORKDIR /services/app
 RUN cargo build --release
