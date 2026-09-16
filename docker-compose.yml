@@ -2,8 +2,9 @@
 services:
   api:
     build:
-      context: './services/api'
+      context: './services/app'
       dockerfile: 'Dockerfile'
+      target: 'server'
 
     container_name: 'api'
 
@@ -11,7 +12,10 @@ services:
       - '${PUSH_NOTIFICATIONS_API_PORT:-}:8080'
 
     environment:
-      - 'VAPID__EMAIL_ADDRESS=${VAPID__EMAIL_ADDRESS:-}'
+      - 'VAPID__EMAIL_ADDRESS=vapid@webgl3d.dev'
+
+    env_file:
+      - services/app/.dev.vars
 
     restart: 'always'
 
@@ -19,6 +23,7 @@ services:
     build:
       context: '.'
       dockerfile: './services/app/Dockerfile'
+      target: 'final'
 
     container_name: 'app'
 

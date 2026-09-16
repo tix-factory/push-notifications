@@ -16,7 +16,7 @@ RUN npm ci
 RUN npm run ci
 
 # Build runtime image
-FROM base as final
+FROM base AS final
 
 # Copy the package.json for the final image.
 COPY ./services/app/docker /app
@@ -29,3 +29,11 @@ RUN npm ci
 COPY --from=build /services/app/dist /app/build
 
 ENTRYPOINT ["npx", "serve", "/app/build"]
+
+# Rust application
+FROM rust:1.98.1 AS server
+COPY . /services/app
+WORKDIR /services/app
+RUN cargo build --release
+EXPOSE 8080
+CMD ["./target/release/push-notifications-demo"]

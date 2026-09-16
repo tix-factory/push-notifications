@@ -1,3 +1,14 @@
+# Secrets
+.dev.vars
+*.pem
+
+# Build foo
+.idea/
+.wrangler/
+dist/
+node_modules/
+target/
+
 # Ensure that we have to rebuild the push-notifications module when we use it locally, in docker.
 
 libs/js/push-notifications/node_modules/

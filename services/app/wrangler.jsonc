@@ -5,19 +5,33 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "push-notifications-demo",
-  "main": "build/worker/shim.mjs",
   "compatibility_date": "2026-09-07",
-  "build": {
-    "command": "cargo install -q \"worker-build@^0.8\" && worker-build --release --panic-unwind"
-  },
-  "assets": {
-    // The path to the directory containing the `index.html` file to be served at `/`
-    "directory": "./dist",
-    "binding": "ASSETS"
-  },
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "proxy/index.ts",
   "observability": {
-    "enabled": true
+    "enabled": true,
   },
+  "containers": [
+    {
+      "class_name": "RustContainer",
+      "image": "./Dockerfile",
+      "max_instances": 1,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "RustContainer",
+        "name": "RUST_CONTAINER",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "new_sqlite_classes": ["RustContainer"],
+      "tag": "v1",
+    },
+  ],
   "upload_source_maps": true,
   /**
    * Smart Placement
@@ -37,8 +51,19 @@
    * https://developers.cloudflare.com/workers/configuration/secrets/
    */
   "vars": {
-    "VAPID__EMAIL_ADDRESS": "vapid@webgl3d.dev"
-  }
+    "VAPID__EMAIL_ADDRESS": "vapid@webgl3d.dev",
+  },
+  "secrets": {
+    "required": ["JWT__PRIVATE_KEY", "VAPID__PUBLIC_KEY", "VAPID__PRIVATE_KEY"],
+  },
+  /**
+   * Static Assets
+   * https://developers.cloudflare.com/workers/static-assets/binding/
+   */
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+  },
   /**
    * Service Bindings (communicate between multiple Workers)
    * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
