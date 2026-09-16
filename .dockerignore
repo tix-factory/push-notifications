@@ -5,6 +5,7 @@
 # Build foo
 .idea/
 .wrangler/
+build/
 dist/
 node_modules/
 target/
