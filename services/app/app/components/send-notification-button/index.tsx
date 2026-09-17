@@ -9,7 +9,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { serviceWorkerUrl } from '../../constants';
 import NotificationSendStatus from '../../enums/notificationSendStatus';
 import ServerRegistrationState from '../../enums/serverRegistrationState';
-import { register, sendPushNotification } from '../../services/api';
+import { register, sendPushNotification, unregister } from '../../services/api';
 
 type SendNotificationButtonInput = {
   // The (base64 encoded) public key to create the push subscription with.
@@ -35,6 +35,21 @@ export default function SendNotificationButton({
   const [sendStatus, setSendStatus] = useState(NotificationSendStatus.None);
 
   useEffect(() => {
+    if (notificationPermission === BrowserPermission.Denied) {
+      unregister()
+        .then(() => {
+          console.log('Cleared authentication cookie for denied permission.');
+        })
+        .catch((e) => {
+          console.error(
+            'Failed to clear authentication for denied permission.',
+            e,
+          );
+        });
+
+      return;
+    }
+
     if (!pushSubscription?.endpoint) {
       return;
     }
@@ -53,7 +68,7 @@ export default function SendNotificationButton({
         );
         setRegistrationState(ServerRegistrationState.Error);
       });
-  }, [pushSubscription, pushSubscription?.endpoint]);
+  }, [pushSubscription, pushSubscription?.endpoint, notificationPermission]);
 
   const grantPermissionClick = async (event: React.MouseEvent) => {
     event.preventDefault();

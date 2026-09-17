@@ -31,7 +31,7 @@ pub struct RegisterPayload {
     /// Browsers have the ability to expire the endpoint after a set amount of time.
     /// This property reflects the expiration, if it exists.
     /// See also: https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription/expirationTime
-    expiration: String,
+    expiration: Option<String>,
 
     /// The (base64 encoded) public key the push subscription is subscribed with.
     p256dh: String,

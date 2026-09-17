@@ -3,7 +3,9 @@ import { serializePushSubscription } from '@tix-factory/push-notifications';
 const registeredEndpoints: { [endpoint: string]: Date } = {};
 let publicKey: string | null = null;
 
-const register = async (pushSubscription: PushSubscription): Promise<void> => {
+export async function register(
+  pushSubscription: PushSubscription,
+): Promise<void> {
   const serializedPushSubscription =
     await serializePushSubscription(pushSubscription);
 
@@ -32,9 +34,25 @@ const register = async (pushSubscription: PushSubscription): Promise<void> => {
   }
 
   registeredEndpoints[pushSubscription.endpoint] = new Date();
-};
+}
 
-const sendPushNotification = async (): Promise<void> => {
+export async function unregister(): Promise<void> {
+  const response = await fetch('/api/v1/push-notifications/unregister', {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to unregister push subscription with the server.');
+  }
+
+  // Clear the "cache"
+  Object.keys(registeredEndpoints).forEach((key) => {
+    delete registeredEndpoints[key];
+  });
+}
+
+export async function sendPushNotification(): Promise<void> {
   const response = await fetch('/api/v1/push-notifications/push', {
     method: 'POST',
     credentials: 'include',
@@ -43,9 +61,9 @@ const sendPushNotification = async (): Promise<void> => {
   if (!response.ok) {
     throw new Error('Failed to send push notification.');
   }
-};
+}
 
-const loadPublicKey = async (): Promise<string> => {
+export async function loadPublicKey(): Promise<string> {
   if (publicKey) {
     return Promise.resolve(publicKey);
   }
@@ -57,6 +75,4 @@ const loadPublicKey = async (): Promise<string> => {
 
   const result = await response.json();
   return (publicKey = result.publicKey);
-};
-
-export { loadPublicKey, register, sendPushNotification };
+}

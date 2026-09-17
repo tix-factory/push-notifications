@@ -4,9 +4,8 @@ declare let self: ServiceWorkerGlobalScope;
 
 // React expects this to be used.
 // Assigning it to a variable will ignore it.
-// See also: https://create-react-app.dev/docs/making-a-progressive-web-app/#customization
-// @ts-ignore
-// eslint-disable-next-line no-restricted-globals, @typescript-eslint/no-unused-vars
+// @ts-expect-error: https://create-react-app.dev/docs/making-a-progressive-web-app/#customization
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const disable_precache = self.__WB_MANIFEST;
 
 console.log('Service Worker Initialized');
@@ -27,7 +26,7 @@ self.addEventListener('push', async (event) => {
 
     console.log('A push message has been sent to the service worker.', data);
 
-    // @ts-ignore: https://github.com/microsoft/TypeScript-DOM-lib-generator/issues/1725#issuecomment-5618439427
+    // @ts-expect-error: https://github.com/microsoft/TypeScript-DOM-lib-generator/issues/1725#issuecomment-5618439427
     const actions: NotificationAction[] = [];
     data.buttons.forEach((buttonText: string, i: number) => {
       actions.push({
@@ -44,7 +43,7 @@ self.addEventListener('push', async (event) => {
         link: data.link,
         buttonLink: data.buttonLink,
       },
-      // @ts-ignore: https://github.com/microsoft/TypeScript-DOM-lib-generator/issues/1725#issuecomment-5618439427
+      // @ts-expect-error: https://github.com/microsoft/TypeScript-DOM-lib-generator/issues/1725#issuecomment-5618439427
       actions: actions,
     });
   } catch (ex) {
