@@ -89,22 +89,23 @@ pub async fn metadata() -> Response<Body> {
 
 /// Gets the current push notification registration status.
 pub async fn registration(cookies: CookieJar) -> impl IntoResponse {
-    let cookie = fetch(cookies);
-    if cookie.is_ok() {
-        return Json(RegistrationResponse {
-            endpoint: cookie.unwrap().sub,
+    match fetch(cookies) {
+        Ok(cookie) => Json(RegistrationResponse {
+            endpoint: cookie.sub,
         })
-        .into_response();
+        .into_response(),
+        Err(e) => {
+            println!("Failed to authorize request: {}", e);
+            StatusCode::UNAUTHORIZED.into_response()
+        }
     }
-
-    StatusCode::UNAUTHORIZED.into_response()
 }
 
 /// Forgets the push notification registration information.
 pub async fn register(
     cookies: CookieJar,
     Json(request): Json<RegisterPayload>,
-) -> (StatusCode, CookieJar) {
+) -> Result<(StatusCode, CookieJar), StatusCode> {
     let claims = AuthCookie {
         sub: request.endpoint,
         p256dh: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.p256dh).unwrap()),
@@ -112,7 +113,13 @@ pub async fn register(
         exp: (Utc::now().timestamp() + (3600 * 24 * 7)) as usize,
     };
 
-    (StatusCode::NO_CONTENT, authenticate(cookies, claims))
+    match authenticate(cookies, claims) {
+        Ok(updated_cookie_jar) => Ok((StatusCode::NO_CONTENT, updated_cookie_jar)),
+        Err(e) => {
+            println!("Failed to authenticate: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 /// Forgets the push notification registration information.
