@@ -1,14 +1,14 @@
-import BrowserPermission from '../../enums/browserPermission';
 import { useEffect, useState } from 'react';
+import BrowserPermission from '../../enums/browserPermission';
 
 // This hook can be used to fetch the current state of whether or not notification
 // permission has been granted by the human to the browser.
 export default function useNotificationPermission(): [
   BrowserPermission,
-  () => Promise<void>
+  () => Promise<void>,
 ] {
   const [browserPermission, setBrowserPermission] = useState(
-    BrowserPermission.Loading
+    BrowserPermission.Loading,
   );
 
   // Setup the hook, and listen for changes.
@@ -40,7 +40,7 @@ export default function useNotificationPermission(): [
         default:
           console.error(
             'Unrecognized permission state:',
-            permissionStatus.state
+            permissionStatus.state,
           );
           setBrowserPermission(BrowserPermission.Error);
           return;
