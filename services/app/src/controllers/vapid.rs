@@ -36,6 +36,10 @@ pub struct RegisterPayload {
     /// Browsers have the ability to expire the endpoint after a set amount of time.
     /// This property reflects the expiration, if it exists.
     /// See also: https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription/expirationTime
+    ///
+    /// For now, we've decided not to implement this into the cookie.
+    /// But we have it here in case we want to parse it, and use it.
+    #[allow(dead_code)]
     expiration: Option<String>,
 
     /// The (base64 encoded) public key the push subscription is subscribed with.
@@ -130,7 +134,6 @@ pub async fn push(cookies: CookieJar) -> StatusCode {
 
     // Now add payload and encrypt.
     let mut builder = WebPushMessageBuilder::new(&subscription_info);
-    let content = "Encrypted payload to be sent in the notification".as_bytes();
     let notification = Notification {
         title: "Hello, world!".to_string(),
         message: "This notification was sent using the push API.".to_string(),
