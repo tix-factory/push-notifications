@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
+import BrowserPermission from '../../enums/browserPermission';
 import PushSubscriptionState from '../../enums/pushSubscriptionState';
 import ServiceWorkerInstallationState from '../../enums/serviceWorkerInstallationState';
-import BrowserPermission from '../../enums/browserPermission';
+import PushNotificationSubscriptionHookInput from '../../types/pushNotificationSubscriptionHookInput';
 import useNotificationPermission from './useNotificationPermission';
 import useServiceWorkerRegistration from './useServiceWorkerRegistration';
-import PushNotificationSubscriptionHookInput from '../../types/pushNotificationSubscriptionHookInput';
 
 // A hook for obtaining a push subscription, intended for notifications.
 // TODO: This hook doesn't support push subscription changes.
@@ -14,13 +14,13 @@ export default function usePushNotificationSubscription({
   pushSubscriptionOptions,
 }: PushNotificationSubscriptionHookInput): [
   PushSubscription | null,
-  PushSubscriptionState
+  PushSubscriptionState,
 ] {
   const [notificationPermission] = useNotificationPermission();
   const [serviceWorkerRegistration, serviceWorkerInstallationState] =
     useServiceWorkerRegistration(serviceWorkerUrl);
   const [pushSubscriptionState, setPushSubscriptionState] = useState(
-    PushSubscriptionState.Loading
+    PushSubscriptionState.Loading,
   );
   const [pushSubscription, setPushSubscription] =
     useState<PushSubscription | null>(null);

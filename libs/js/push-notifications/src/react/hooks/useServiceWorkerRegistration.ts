@@ -3,7 +3,7 @@ import ServiceWorkerInstallationState from '../../enums/serviceWorkerInstallatio
 
 // A hook for installing, and fetching a service worker.
 export default function useServiceWorkerRegistration(
-  serviceWorkerUrl: string
+  serviceWorkerUrl: string,
 ): [ServiceWorkerRegistration | null, ServiceWorkerInstallationState] {
   const [serviceWorkerInstallationState, setServiceWorkerInstallationState] =
     useState(ServiceWorkerInstallationState.Loading);
@@ -13,7 +13,7 @@ export default function useServiceWorkerRegistration(
   useEffect(() => {
     if (!('serviceWorker' in navigator)) {
       setServiceWorkerInstallationState(
-        ServiceWorkerInstallationState.Unsupported
+        ServiceWorkerInstallationState.Unsupported,
       );
       return;
     }
@@ -29,7 +29,7 @@ export default function useServiceWorkerRegistration(
 
         setServiceWorkerRegistration(registration);
         setServiceWorkerInstallationState(
-          ServiceWorkerInstallationState.Installed
+          ServiceWorkerInstallationState.Installed,
         );
       })
       .catch((err) => {

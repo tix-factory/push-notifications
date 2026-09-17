@@ -1,7 +1,7 @@
 import SerializedPushSubscription from '../types/serializedPushSubscription';
 
 const getPushSubscriptionExpiration = (
-  pushSubscription: PushSubscription
+  pushSubscription: PushSubscription,
 ): Date | undefined => {
   if (pushSubscription.expirationTime) {
     // https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription/expirationTime
@@ -20,7 +20,7 @@ const base64Encode = (arrayBuffer: ArrayBuffer) => {
 
 // Serializes a push subscription object into something that can be easily read, and sent to a backend server.
 export default (
-  pushSubscription: PushSubscription
+  pushSubscription: PushSubscription,
 ): Promise<SerializedPushSubscription> => {
   if (!pushSubscription.endpoint) {
     return Promise.reject(new Error('Invalid push subscription endpoint'));

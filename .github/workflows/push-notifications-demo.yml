@@ -9,6 +9,11 @@ on:
     branches:
       - main
 
+# Cancel any workflow that's running if we make another commit on the same pull request.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: 'ubuntu-latest'
