@@ -1,22 +1,24 @@
 mod controllers;
-mod utils;
 mod cookies;
+mod utils;
 
+use crate::controllers::vapid::{metadata, push, register, registration, unregister};
 use axum::{
+    routing::{delete, get, post},
     Router,
-    routing::{get, delete, post}
 };
-use crate::controllers::vapid::{metadata, registration, register, unregister, push};
 
 #[tokio::main]
 async fn main() {
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080")
-        .await
-        .unwrap();
-    println!("listening on {} (until SIGTERM)", listener.local_addr().unwrap());
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    println!(
+        "listening on {} (until SIGTERM)",
+        listener.local_addr().unwrap()
+    );
     axum::serve(listener, router())
         .with_graceful_shutdown(shutdown_signal())
-        .await.unwrap();
+        .await
+        .unwrap();
     println!("container is shutting down");
 }
 

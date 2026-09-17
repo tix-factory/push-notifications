@@ -1,7 +1,7 @@
-use std::env;
 use axum_extra::extract::{cookie::Cookie, CookieJar};
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey};
+use std::env;
 
 const AUTH_COOKIE_NAME: &str = "auth_token";
 
@@ -24,18 +24,27 @@ pub struct AuthCookie {
 pub fn fetch(cookies: CookieJar) -> Result<AuthCookie, String> {
     let cookie = match cookies.get(AUTH_COOKIE_NAME) {
         Some(cookie) => cookie.value(),
-        None => return Err("Authentication cookie is not set".to_string())
+        None => return Err("Authentication cookie is not set".to_string()),
     };
-    
-    match decode::<AuthCookie>(cookie, &jwt_public_key(), &Validation::new(Algorithm::RS256)) {
+
+    match decode::<AuthCookie>(
+        cookie,
+        &jwt_public_key(),
+        &Validation::new(Algorithm::RS256),
+    ) {
         Ok(auth) => Ok(auth.claims),
-        Err(e) => Err(e.to_string())
+        Err(e) => Err(e.to_string()),
     }
 }
 
 /// Authenticates the cookie jar with a JWT.
 pub fn authenticate(cookies: CookieJar, auth_cookie: AuthCookie) -> CookieJar {
-    let token = encode(&Header::new(Algorithm::RS256), &auth_cookie, &jwt_private_key()).expect("Failed to encode JWT");
+    let token = encode(
+        &Header::new(Algorithm::RS256),
+        &auth_cookie,
+        &jwt_private_key(),
+    )
+    .expect("Failed to encode JWT");
     let cookie = Cookie::build((AUTH_COOKIE_NAME, token))
         .path("/")
         .max_age(time::Duration::days(7))
