@@ -36,8 +36,11 @@ COPY . /services/app
 WORKDIR /services/app
 RUN cargo build --release
 
-FROM rust:1.98.1-slim AS server
+FROM debian:trixie-slim AS server
 WORKDIR /app
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=server-build /services/app/target/release/push-notifications-demo .
 EXPOSE 8080
 CMD ["./push-notifications-demo"]

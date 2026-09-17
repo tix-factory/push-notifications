@@ -3,12 +3,14 @@
 *.pem
 
 # Build foo
+.git/
 .idea/
 .wrangler/
 build/
 dist/
 node_modules/
 target/
+Dockerfile
 
 # Ensure that we have to rebuild the push-notifications module when we use it locally, in docker.
 
