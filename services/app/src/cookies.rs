@@ -1,7 +1,7 @@
-use std::env;
 use axum_extra::extract::{cookie::Cookie, CookieJar};
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey};
+use std::env;
 
 const AUTH_COOKIE_NAME: &str = "auth_token";
 
@@ -22,28 +22,39 @@ pub struct AuthCookie {
 
 /// Fetches the authentication details from the cookie jar.
 pub fn fetch(cookies: CookieJar) -> Result<AuthCookie, String> {
-    let cookie = cookies.get(AUTH_COOKIE_NAME);
-    if cookie.is_some() {
-        let token = cookie.unwrap().value();
-        let auth = decode::<AuthCookie>(token, &jwt_public_key(), &Validation::new(Algorithm::RS256));
-        if auth.is_ok() {
-            return Ok(auth.unwrap().claims);
-        }
+    let cookie = match cookies.get(AUTH_COOKIE_NAME) {
+        Some(cookie) => cookie.value(),
+        None => return Err("Authentication cookie is not set".to_string()),
+    };
 
-        return Err(auth.err().unwrap().to_string());
+    let public_key = match jwt_public_key() {
+        Ok(key) => key,
+        Err(e) => return Err(e),
+    };
+
+    match decode::<AuthCookie>(cookie, &public_key, &Validation::new(Algorithm::RS256)) {
+        Ok(auth) => Ok(auth.claims),
+        Err(e) => Err(e.to_string()),
     }
-
-    Err("Authentication cookie is not set".to_string())
 }
 
 /// Authenticates the cookie jar with a JWT.
-pub fn authenticate(cookies: CookieJar, auth_cookie: AuthCookie) -> CookieJar {
-    let token = encode(&Header::new(Algorithm::RS256), &auth_cookie, &jwt_private_key()).expect("Failed to encode JWT");
-    let cookie = Cookie::build((AUTH_COOKIE_NAME, token))
-        .path("/")
-        .max_age(time::Duration::days(7))
-        .build();
-    cookies.add(cookie)
+pub fn authenticate(cookies: CookieJar, auth_cookie: AuthCookie) -> Result<CookieJar, String> {
+    let private_key = match jwt_private_key() {
+        Ok(key) => key,
+        Err(e) => return Err(e),
+    };
+
+    match encode(&Header::new(Algorithm::RS256), &auth_cookie, &private_key) {
+        Ok(token) => {
+            let cookie = Cookie::build((AUTH_COOKIE_NAME, token))
+                .path("/")
+                .max_age(time::Duration::days(7))
+                .build();
+            Ok(cookies.add(cookie))
+        }
+        Err(e) => Err(format!("Failed to encode JWT: {}", e.to_string())),
+    }
 }
 
 /// Removes the authentication cookie from the cookie jar.
@@ -56,13 +67,33 @@ pub fn clear(cookies: CookieJar) -> CookieJar {
 }
 
 /// Reads the `JWT__PRIVATE_KEY` PEM from the environment variables.
-fn jwt_private_key() -> EncodingKey {
-    let raw_private_key = env::var("JWT__PRIVATE_KEY").expect("JWT__PRIVATE_KEY is not set.");
-    EncodingKey::from_rsa_pem(raw_private_key.as_bytes()).expect("Failed to parse JWT__PRIVATE_KEY")
+fn jwt_private_key() -> Result<EncodingKey, String> {
+    let private_key = match env::var("JWT__PRIVATE_KEY") {
+        Ok(raw_public_key) => EncodingKey::from_rsa_pem(raw_public_key.as_bytes()),
+        Err(_) => return Err("JWT__PRIVATE_KEY environment variable is not set".to_string()),
+    };
+
+    match private_key {
+        Ok(key) => Ok(key),
+        Err(e) => Err(format!(
+            "Failed to parse JWT__PRIVATE_KEY PEM: {}",
+            e.to_string()
+        )),
+    }
 }
 
 /// Reads the `JWT_PUBLIC_KEY` PEM from the environment variables.
-fn jwt_public_key() -> DecodingKey {
-    let raw_public_key = env::var("JWT__PUBLIC_KEY").expect("JWT__PUBLIC_KEY is not set.");
-    DecodingKey::from_rsa_pem(raw_public_key.as_bytes()).expect("Failed to parse JWT__PUBLIC_KEY")
+fn jwt_public_key() -> Result<DecodingKey, String> {
+    let public_key = match env::var("JWT__PUBLIC_KEY") {
+        Ok(raw_public_key) => DecodingKey::from_rsa_pem(raw_public_key.as_bytes()),
+        Err(_) => return Err("JWT__PUBLIC_KEY environment variable is not set".to_string()),
+    };
+
+    match public_key {
+        Ok(key) => Ok(key),
+        Err(e) => Err(format!(
+            "Failed to parse JWT__PUBLIC_KEY PEM: {}",
+            e.to_string()
+        )),
+    }
 }

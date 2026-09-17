@@ -1,12 +1,11 @@
+use p256::pkcs8::DecodePublicKey;
+use p256::PublicKey;
 use std::env;
 use std::sync::LazyLock;
-use p256::pkcs8::DecodePublicKey;
-use p256::{PublicKey};
 
 /// Reads the `VAPID__EMAIL_ADDRESS` from the environment variables.
-pub static EMAIL_ADDRESS: LazyLock<String> = LazyLock::new(|| {
-    env::var("VAPID__EMAIL_ADDRESS").expect("VAPID__EMAIL_ADDRESS is not set.")
-});
+pub static EMAIL_ADDRESS: LazyLock<String> =
+    LazyLock::new(|| env::var("VAPID__EMAIL_ADDRESS").expect("VAPID__EMAIL_ADDRESS is not set."));
 
 /// Reads the `VAPID__PUBLIC_KEY` PEM from the environment variables.
 pub static VAPID_PUBLIC_KEY: LazyLock<PublicKey> = LazyLock::new(|| {

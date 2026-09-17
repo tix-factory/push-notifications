@@ -1,23 +1,29 @@
-use std::env;
+use crate::cookies::{authenticate, clear, fetch, AuthCookie};
+use crate::utils::{EMAIL_ADDRESS, VAPID_PUBLIC_KEY};
 use axum::{
     body::Body,
     http::{Response, StatusCode},
     response::IntoResponse,
-    Json
+    Json,
 };
-use axum_extra::extract::{CookieJar};
-use chrono::{Utc};
-use serde::{Serialize, Deserialize};
-use base64::{engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD}, Engine};
-use web_push::{ContentEncoding, IsahcWebPushClient, SubscriptionInfo, VapidSignatureBuilder, WebPushClient, WebPushMessageBuilder};
-use crate::utils::{EMAIL_ADDRESS, VAPID_PUBLIC_KEY};
-use crate::cookies::{AuthCookie, authenticate, clear, fetch};
+use axum_extra::extract::CookieJar;
+use base64::{
+    engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
+    Engine,
+};
+use chrono::Utc;
+use serde::{Deserialize, Serialize};
+use std::env;
+use web_push::{
+    ContentEncoding, IsahcWebPushClient, SubscriptionInfo, VapidSignatureBuilder, WebPushClient,
+    WebPushMessageBuilder,
+};
 
 #[derive(Serialize)]
 struct Metadata {
     /// The URL-safe base64 encoded VAPID public key.
     #[serde(rename = "publicKey")]
-    public_key: String
+    public_key: String,
 }
 
 #[derive(Serialize)]
@@ -75,38 +81,46 @@ pub struct Notification {
 /// The metadata endpoint used by the web app to load the VAPID public key.
 pub async fn metadata() -> Response<Body> {
     let body = Metadata {
-        public_key: URL_SAFE_NO_PAD.encode(VAPID_PUBLIC_KEY.to_sec1_bytes())
+        public_key: URL_SAFE_NO_PAD.encode(VAPID_PUBLIC_KEY.to_sec1_bytes()),
     };
 
-    (
-        Json(body),
-    ).into_response()
+    (Json(body),).into_response()
 }
 
 /// Gets the current push notification registration status.
 pub async fn registration(cookies: CookieJar) -> impl IntoResponse {
-    let cookie = fetch(cookies);
-    if cookie.is_ok() {
-        return Json(RegistrationResponse {
-            endpoint: cookie.unwrap().sub
-        }).into_response();
+    match fetch(cookies) {
+        Ok(cookie) => Json(RegistrationResponse {
+            endpoint: cookie.sub,
+        })
+        .into_response(),
+        Err(e) => {
+            println!("Failed to authorize request: {}", e);
+            StatusCode::UNAUTHORIZED.into_response()
+        }
     }
-
-    StatusCode::UNAUTHORIZED.into_response()
 }
 
 /// Forgets the push notification registration information.
-pub async fn register(cookies: CookieJar, Json(request): Json<RegisterPayload>) -> (StatusCode, CookieJar) {
+pub async fn register(
+    cookies: CookieJar,
+    Json(request): Json<RegisterPayload>,
+) -> Result<(StatusCode, CookieJar), StatusCode> {
     let claims = AuthCookie {
         sub: request.endpoint,
         p256dh: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.p256dh).unwrap()),
         auth: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.auth).unwrap()),
-        exp: (Utc::now().timestamp() + (3600 * 24 * 7)) as usize
+        exp: (Utc::now().timestamp() + (3600 * 24 * 7)) as usize,
     };
 
-    (StatusCode::NO_CONTENT, authenticate(cookies, claims))
+    match authenticate(cookies, claims) {
+        Ok(updated_cookie_jar) => Ok((StatusCode::NO_CONTENT, updated_cookie_jar)),
+        Err(e) => {
+            println!("Failed to authenticate: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
-
 
 /// Forgets the push notification registration information.
 pub async fn unregister(cookies: CookieJar) -> (StatusCode, CookieJar) {
@@ -122,15 +136,12 @@ pub async fn push(cookies: CookieJar) -> StatusCode {
     }
 
     let auth = cookie.unwrap();
-    let subscription_info = SubscriptionInfo::new(
-        auth.sub,
-        auth.p256dh,
-        auth.auth
-    );
+    let subscription_info = SubscriptionInfo::new(auth.sub, auth.p256dh, auth.auth);
 
     // Read signing material for payload.
     let raw_private_key = env::var("VAPID__PRIVATE_KEY").expect("VAPID__PRIVATE_KEY is not set.");
-    let mut sig_builder = VapidSignatureBuilder::from_pem(raw_private_key.as_bytes(), &subscription_info).unwrap();
+    let mut sig_builder =
+        VapidSignatureBuilder::from_pem(raw_private_key.as_bytes(), &subscription_info).unwrap();
     sig_builder.add_claim("sub", format!("mailto:{}", EMAIL_ADDRESS.to_string()));
 
     // Now add payload and encrypt.
@@ -138,10 +149,11 @@ pub async fn push(cookies: CookieJar) -> StatusCode {
     let notification = Notification {
         title: "Hello, world!".to_string(),
         message: "This notification was sent using the push API.".to_string(),
-        icon: "https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f514.png".to_string(),
+        icon: "https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f514.png"
+            .to_string(),
         link: "https://demo.push-notifications.app?notification_clicked=true".to_string(),
         button_link: "https://github.com/tix-factory/push-notifications/issues".to_string(),
-        buttons: ["🐛 File Bug".to_string()]
+        buttons: ["🐛 File Bug".to_string()],
     };
     let json = serde_json::to_string(&notification).unwrap();
     builder.set_payload(ContentEncoding::Aes128Gcm, json.as_bytes());
@@ -151,7 +163,10 @@ pub async fn push(cookies: CookieJar) -> StatusCode {
     let client = IsahcWebPushClient::new();
     let result = client.unwrap().send(builder.build().unwrap()).await;
     if !result.is_ok() {
-        println!("Failed to send push notification: {}", result.err().unwrap());
+        println!(
+            "Failed to send push notification: {}",
+            result.err().unwrap()
+        );
         return StatusCode::INTERNAL_SERVER_ERROR;
     }
 
