@@ -3,9 +3,9 @@ mod utils;
 
 use axum::{
     Router,
-    routing::{get, delete}
+    routing::{get, delete, post}
 };
-use crate::controllers::vapid::{metadata, unregister};
+use crate::controllers::vapid::{metadata, register, unregister};
 
 #[tokio::main]
 async fn main() {
@@ -22,6 +22,7 @@ async fn main() {
 fn router() -> Router {
     Router::new()
         .route("/api/v1/push-notifications/metadata", get(metadata))
+        .route("/api/v1/push-notifications/register", post(register))
         .route("/api/v1/push-notifications/unregister", delete(unregister))
 }
 
