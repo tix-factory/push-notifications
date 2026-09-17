@@ -16,6 +16,7 @@ async fn main() {
     axum::serve(listener, router())
         .with_graceful_shutdown(shutdown_signal())
         .await.unwrap();
+    println!("container is shutting down");
 }
 
 fn router() -> Router {
