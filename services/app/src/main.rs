@@ -1,5 +1,6 @@
 mod controllers;
 mod utils;
+mod cookies;
 
 use axum::{
     Router,
