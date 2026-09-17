@@ -1,6 +1,5 @@
 use std::env;
 use std::sync::LazyLock;
-use jsonwebtoken::{EncodingKey, DecodingKey};
 use p256::pkcs8::DecodePublicKey;
 use p256::{PublicKey};
 

@@ -6,7 +6,7 @@ use axum::{
     Router,
     routing::{get, delete, post}
 };
-use crate::controllers::vapid::{metadata, registration, register, unregister};
+use crate::controllers::vapid::{metadata, registration, register, unregister, push};
 
 #[tokio::main]
 async fn main() {
@@ -26,6 +26,7 @@ fn router() -> Router {
         .route("/api/v1/push-notifications/registration", get(registration))
         .route("/api/v1/push-notifications/register", post(register))
         .route("/api/v1/push-notifications/unregister", delete(unregister))
+        .route("/api/v1/push-notifications/push", post(push))
 }
 
 async fn shutdown_signal() {
