@@ -8,9 +8,9 @@ use axum::{
 use axum_extra::extract::{CookieJar};
 use chrono::{Utc};
 use serde::{Serialize, Deserialize};
-use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
+use base64::{engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD}, Engine};
 use web_push::{ContentEncoding, IsahcWebPushClient, SubscriptionInfo, VapidSignatureBuilder, WebPushClient, WebPushMessageBuilder};
-use crate::utils::{VAPID_PUBLIC_KEY};
+use crate::utils::{EMAIL_ADDRESS, VAPID_PUBLIC_KEY};
 use crate::cookies::{AuthCookie, authenticate, clear, fetch};
 
 #[derive(Serialize)]
@@ -94,8 +94,8 @@ pub async fn registration(cookies: CookieJar) -> impl IntoResponse {
 pub async fn register(cookies: CookieJar, Json(request): Json<RegisterPayload>) -> (StatusCode, CookieJar) {
     let claims = AuthCookie {
         sub: request.endpoint,
-        p256dh: request.p256dh,
-        auth: request.auth,
+        p256dh: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.p256dh).unwrap()),
+        auth: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.auth).unwrap()),
         exp: (Utc::now().timestamp() + (3600 * 24 * 7)) as usize
     };
 
@@ -125,7 +125,8 @@ pub async fn push(cookies: CookieJar) -> StatusCode {
 
     // Read signing material for payload.
     let raw_private_key = env::var("VAPID__PRIVATE_KEY").expect("VAPID__PRIVATE_KEY is not set.");
-    let sig_builder = VapidSignatureBuilder::from_pem(raw_private_key.as_bytes(), &subscription_info).unwrap().build().unwrap();
+    let mut sig_builder = VapidSignatureBuilder::from_pem(raw_private_key.as_bytes(), &subscription_info).unwrap();
+    sig_builder.add_claim("sub", format!("mailto:{}", EMAIL_ADDRESS.to_string()));
 
     // Now add payload and encrypt.
     let mut builder = WebPushMessageBuilder::new(&subscription_info);
@@ -140,12 +141,12 @@ pub async fn push(cookies: CookieJar) -> StatusCode {
     };
     let json = serde_json::to_string(&notification).unwrap();
     builder.set_payload(ContentEncoding::Aes128Gcm, json.as_bytes());
-    builder.set_vapid_signature(sig_builder);
+    builder.set_vapid_signature(sig_builder.build().unwrap());
 
     // Finally, send the notification!
     let client = IsahcWebPushClient::new();
     let result = client.unwrap().send(builder.build().unwrap()).await;
-    if result.is_ok() {
+    if !result.is_ok() {
         println!("Failed to send push notification: {}", result.err().unwrap());
         return StatusCode::INTERNAL_SERVER_ERROR;
     }
