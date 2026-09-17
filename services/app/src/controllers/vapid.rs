@@ -60,7 +60,7 @@ pub async fn metadata() -> Response<Body> {
 }
 
 /// Forgets the push notification registration information.
-pub async fn register(cookies: CookieJar, Json(request): Json<RegisterPayload>) -> StatusCode {
+pub async fn register(cookies: CookieJar, Json(request): Json<RegisterPayload>) -> (StatusCode, CookieJar) {
     let claims = AuthCookie {
         sub: request.endpoint,
         p256dh: request.p256dh,
@@ -72,19 +72,17 @@ pub async fn register(cookies: CookieJar, Json(request): Json<RegisterPayload>) 
         .path("/")
         .max_age(time::Duration::days(7))
         .build();
-    let _ = cookies.add(cookie);
 
-    StatusCode::NO_CONTENT
+    (StatusCode::NO_CONTENT, cookies.add(cookie))
 }
 
 
 /// Forgets the push notification registration information.
-pub async fn unregister(cookies: CookieJar) -> StatusCode {
+pub async fn unregister(cookies: CookieJar) -> (StatusCode, CookieJar) {
     let cookie = Cookie::build((AUTH_COOKIE_NAME, ""))
         .path("/")
         .max_age(time::Duration::ZERO)
         .build();
-    let _ = cookies.remove(cookie);
 
-    StatusCode::NO_CONTENT
+    (StatusCode::NO_CONTENT, cookies.remove(cookie))
 }
