@@ -1,11 +1,12 @@
 mod controllers;
 mod utils;
+mod cookies;
 
 use axum::{
     Router,
     routing::{get, delete, post}
 };
-use crate::controllers::vapid::{metadata, register, unregister};
+use crate::controllers::vapid::{metadata, registration, register, unregister};
 
 #[tokio::main]
 async fn main() {
@@ -22,6 +23,7 @@ async fn main() {
 fn router() -> Router {
     Router::new()
         .route("/api/v1/push-notifications/metadata", get(metadata))
+        .route("/api/v1/push-notifications/registration", get(registration))
         .route("/api/v1/push-notifications/register", post(register))
         .route("/api/v1/push-notifications/unregister", delete(unregister))
 }

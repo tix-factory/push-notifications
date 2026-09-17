@@ -54,7 +54,12 @@
     "VAPID__EMAIL_ADDRESS": "vapid@webgl3d.dev",
   },
   "secrets": {
-    "required": ["JWT__PRIVATE_KEY", "VAPID__PUBLIC_KEY", "VAPID__PRIVATE_KEY"],
+    "required": [
+      "JWT__PRIVATE_KEY",
+      "JWT__PUBLIC_KEY",
+      "VAPID__PUBLIC_KEY",
+      "VAPID__PRIVATE_KEY",
+    ],
   },
   /**
    * Static Assets
