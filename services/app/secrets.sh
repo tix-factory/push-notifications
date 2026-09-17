@@ -9,4 +9,4 @@ openssl ec -in vapid_keypair.pem -out private_key.pem
 
 # Save the keys on disk, for running locally
 # This shouldn't match what's in cloud, you can generate the keys again before running this
-echo "VAPID__PUBLIC_KEY=\"$(cat public_key.pem)\"\nVAPID__PRIVATE_KEY=\"$(cat private_key.pem)\"\nJWT__PRIVATE_KEY=\"$(cat auth_private_key.pem)\"" > .dev.vars
+echo "VAPID__PUBLIC_KEY=\"$(cat public_key.pem)\"\nVAPID__PRIVATE_KEY=\"$(cat private_key.pem)\"\nJWT__PRIVATE_KEY=\"$(cat auth_private_key.pem)\"\nJWT__PUBLIC_KEY=\"$(cat auth_public_key.pem)\"" > .dev.vars

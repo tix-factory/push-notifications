@@ -9,7 +9,7 @@ use chrono::{Utc};
 use serde::{Serialize, Deserialize};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use jsonwebtoken::{encode, decode, Header, Extras, Algorithm, Validation, EncodingKey, DecodingKey};
-use crate::utils::{VAPID_PUBLIC_KEY, JWT_PRIVATE_KEY};
+use crate::utils::{VAPID_PUBLIC_KEY, jwt_private_key, jwt_public_key};
 
 
 const AUTH_COOKIE_NAME: &str = "auth_token";
@@ -21,7 +21,13 @@ struct Metadata {
     public_key: String
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
+struct RegistrationResponse {
+    /// The endpoint to send the notification to.
+    endpoint: String,
+}
+
+#[derive(Deserialize)]
 pub struct RegisterPayload {
     /// The endpoint to send the notification to.
     endpoint: String,
@@ -66,6 +72,23 @@ pub async fn metadata() -> Response<Body> {
     ).into_response()
 }
 
+/// Gets the current push notification registration status.
+pub async fn registration(cookies: CookieJar) -> impl IntoResponse {
+    let cookie = cookies.get(AUTH_COOKIE_NAME);
+    if cookie.is_some() {
+        let token = cookie.unwrap().to_string();
+        let auth = decode::<AuthCookie>(token, &jwt_public_key(), &Validation::default());
+        if auth.is_ok() {
+            let response = RegistrationResponse {
+                endpoint: auth.unwrap().claims.sub
+            };
+            return Json(response).into_response();
+        }
+    }
+
+    StatusCode::UNAUTHORIZED.into_response()
+}
+
 /// Forgets the push notification registration information.
 pub async fn register(cookies: CookieJar, Json(request): Json<RegisterPayload>) -> (StatusCode, CookieJar) {
     let claims = AuthCookie {
@@ -74,7 +97,7 @@ pub async fn register(cookies: CookieJar, Json(request): Json<RegisterPayload>) 
         auth: request.auth,
         exp: (Utc::now().timestamp() + (3600 * 24 * 7)) as usize
     };
-    let token = encode(&Header::new(Algorithm::RS256), &claims, &JWT_PRIVATE_KEY).expect("Failed to encode JWT");
+    let token = encode(&Header::new(Algorithm::RS256), &claims, &jwt_private_key()).expect("Failed to encode JWT");
     let cookie = Cookie::build((AUTH_COOKIE_NAME, token))
         .path("/")
         .max_age(time::Duration::days(7))

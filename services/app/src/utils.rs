@@ -1,6 +1,6 @@
 use std::env;
 use std::sync::LazyLock;
-use jsonwebtoken::EncodingKey;
+use jsonwebtoken::{EncodingKey, DecodingKey};
 use p256::pkcs8::DecodePublicKey;
 use p256::{PublicKey};
 
@@ -16,7 +16,13 @@ pub static VAPID_PUBLIC_KEY: LazyLock<PublicKey> = LazyLock::new(|| {
 });
 
 /// Reads the `JWT__PRIVATE_KEY` PEM from the environment variables.
-pub static JWT_PRIVATE_KEY: LazyLock<EncodingKey> = LazyLock::new(|| {
+pub fn jwt_private_key() -> EncodingKey {
     let raw_private_key = env::var("JWT__PRIVATE_KEY").expect("JWT__PRIVATE_KEY is not set.");
     EncodingKey::from_rsa_pem(raw_private_key.as_bytes()).expect("Failed to parse JWT__PRIVATE_KEY")
-});
+}
+
+/// Reads the `JWT_PUBLIC_KEY` PEM from the environment variables.
+pub fn jwt_public_key() -> DecodingKey {
+    let raw_public_key = env::var("JWT__PUBLIC_KEY").expect("JWT__PUBLIC_KEY is not set.");
+    DecodingKey::from_rsa_pem(raw_public_key.as_bytes()).expect("Failed to parse JWT__PUBLIC_KEY")
+}
