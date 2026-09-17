@@ -22,18 +22,15 @@ pub struct AuthCookie {
 
 /// Fetches the authentication details from the cookie jar.
 pub fn fetch(cookies: CookieJar) -> Result<AuthCookie, String> {
-    let cookie = cookies.get(AUTH_COOKIE_NAME);
-    if cookie.is_some() {
-        let token = cookie.unwrap().value();
-        let auth = decode::<AuthCookie>(token, &jwt_public_key(), &Validation::new(Algorithm::RS256));
-        if auth.is_ok() {
-            return Ok(auth.unwrap().claims);
-        }
-
-        return Err(auth.err().unwrap().to_string());
+    let cookie = match cookies.get(AUTH_COOKIE_NAME) {
+        Some(cookie) => cookie.value(),
+        None => return Err("Authentication cookie is not set".to_string())
+    };
+    
+    match decode::<AuthCookie>(cookie, &jwt_public_key(), &Validation::new(Algorithm::RS256)) {
+        Ok(auth) => Ok(auth.claims),
+        Err(e) => Err(e.to_string())
     }
-
-    Err("Authentication cookie is not set".to_string())
 }
 
 /// Authenticates the cookie jar with a JWT.
