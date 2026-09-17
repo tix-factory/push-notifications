@@ -61,6 +61,7 @@ pub struct Notification {
     buttons: [String; 1],
 
     /// The icon image to use for the notification.
+    #[serde(rename = "iconUrl")]
     icon: String,
 
     /// The link that the notification will open when clicked.
