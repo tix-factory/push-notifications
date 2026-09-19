@@ -1,7 +1,7 @@
+use crate::env::{JWT_PRIVATE_KEY, JWT_PUBLIC_KEY};
 use axum_extra::extract::{cookie::Cookie, CookieJar};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use std::env;
 
 const AUTH_COOKIE_NAME: &str = "auth_token";
 
@@ -27,9 +27,9 @@ pub fn fetch(cookies: CookieJar) -> Result<AuthCookie, String> {
         None => return Err("Authentication cookie is not set".to_string()),
     };
 
-    let public_key = match jwt_public_key() {
+    let public_key = match DecodingKey::from_rsa_pem(JWT_PUBLIC_KEY.as_bytes()) {
         Ok(key) => key,
-        Err(e) => return Err(e),
+        Err(e) => return Err(e.to_string()),
     };
 
     match decode::<AuthCookie>(cookie, &public_key, &Validation::new(Algorithm::RS256)) {
@@ -40,9 +40,9 @@ pub fn fetch(cookies: CookieJar) -> Result<AuthCookie, String> {
 
 /// Authenticates the cookie jar with a JWT.
 pub fn authenticate(cookies: CookieJar, auth_cookie: AuthCookie) -> Result<CookieJar, String> {
-    let private_key = match jwt_private_key() {
+    let private_key = match EncodingKey::from_rsa_pem(JWT_PRIVATE_KEY.as_bytes()) {
         Ok(key) => key,
-        Err(e) => return Err(e),
+        Err(e) => return Err(e.to_string()),
     };
 
     match encode(&Header::new(Algorithm::RS256), &auth_cookie, &private_key) {
@@ -64,36 +64,4 @@ pub fn clear(cookies: CookieJar) -> CookieJar {
         .max_age(time::Duration::ZERO)
         .build();
     cookies.remove(cookie)
-}
-
-/// Reads the `JWT__PRIVATE_KEY` PEM from the environment variables.
-fn jwt_private_key() -> Result<EncodingKey, String> {
-    let private_key = match env::var("JWT__PRIVATE_KEY") {
-        Ok(raw_public_key) => EncodingKey::from_rsa_pem(raw_public_key.as_bytes()),
-        Err(_) => return Err("JWT__PRIVATE_KEY environment variable is not set".to_string()),
-    };
-
-    match private_key {
-        Ok(key) => Ok(key),
-        Err(e) => Err(format!(
-            "Failed to parse JWT__PRIVATE_KEY PEM: {}",
-            e.to_string()
-        )),
-    }
-}
-
-/// Reads the `JWT_PUBLIC_KEY` PEM from the environment variables.
-fn jwt_public_key() -> Result<DecodingKey, String> {
-    let public_key = match env::var("JWT__PUBLIC_KEY") {
-        Ok(raw_public_key) => DecodingKey::from_rsa_pem(raw_public_key.as_bytes()),
-        Err(_) => return Err("JWT__PUBLIC_KEY environment variable is not set".to_string()),
-    };
-
-    match public_key {
-        Ok(key) => Ok(key),
-        Err(e) => Err(format!(
-            "Failed to parse JWT__PUBLIC_KEY PEM: {}",
-            e.to_string()
-        )),
-    }
 }

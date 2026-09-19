@@ -1,26 +1,20 @@
 use crate::cookies::{authenticate, clear, fetch, AuthCookie};
-use crate::utils::{EMAIL_ADDRESS, VAPID_PUBLIC_KEY};
-use axum::{
-    body::Body,
-    http::{Response, StatusCode},
-    response::IntoResponse,
-    Json,
-};
+use crate::env::{EMAIL_ADDRESS, VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY};
+use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
 use base64::{
     engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
-    Engine,
+    DecodeError, Engine,
 };
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::env;
 use web_push::{
-    ContentEncoding, IsahcWebPushClient, SubscriptionInfo, VapidSignatureBuilder, WebPushClient,
-    WebPushMessageBuilder,
+    ContentEncoding, IsahcWebPushClient, SubscriptionInfo, VapidSignature, VapidSignatureBuilder,
+    WebPushClient, WebPushMessage, WebPushMessageBuilder,
 };
 
 #[derive(Serialize)]
-struct Metadata {
+pub struct Metadata {
     /// The URL-safe base64 encoded VAPID public key.
     #[serde(rename = "publicKey")]
     public_key: String,
@@ -79,12 +73,10 @@ pub struct Notification {
 }
 
 /// The metadata endpoint used by the web app to load the VAPID public key.
-pub async fn metadata() -> Response<Body> {
-    let body = Metadata {
+pub async fn metadata() -> Json<Metadata> {
+    Json(Metadata {
         public_key: URL_SAFE_NO_PAD.encode(VAPID_PUBLIC_KEY.to_sec1_bytes()),
-    };
-
-    (Json(body),).into_response()
+    })
 }
 
 /// Gets the current push notification registration status.
@@ -108,8 +100,14 @@ pub async fn register(
 ) -> Result<(StatusCode, CookieJar), StatusCode> {
     let claims = AuthCookie {
         sub: request.endpoint,
-        p256dh: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.p256dh).unwrap()),
-        auth: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.auth).unwrap()),
+        p256dh: match safe_base64(request.p256dh) {
+            Ok(s) => s,
+            Err(_) => return Err(StatusCode::BAD_REQUEST),
+        },
+        auth: match safe_base64(request.auth) {
+            Ok(s) => s,
+            Err(_) => return Err(StatusCode::BAD_REQUEST),
+        },
         exp: (Utc::now().timestamp() + (3600 * 24 * 7)) as usize,
     };
 
@@ -128,47 +126,112 @@ pub async fn unregister(cookies: CookieJar) -> (StatusCode, CookieJar) {
 }
 
 /// Sends a push notification to the endpoint that was previously registered.
-pub async fn push(cookies: CookieJar) -> StatusCode {
+pub async fn push(cookies: CookieJar) -> Result<StatusCode, String> {
     // Read the registered push notification details, from the browser/cookie.
-    let cookie = fetch(cookies);
-    if !cookie.is_ok() {
-        return StatusCode::UNAUTHORIZED;
-    }
-
-    let auth = cookie.unwrap();
-    let subscription_info = SubscriptionInfo::new(auth.sub, auth.p256dh, auth.auth);
-
-    // Read signing material for payload.
-    let raw_private_key = env::var("VAPID__PRIVATE_KEY").expect("VAPID__PRIVATE_KEY is not set.");
-    let mut sig_builder =
-        VapidSignatureBuilder::from_pem(raw_private_key.as_bytes(), &subscription_info).unwrap();
-    sig_builder.add_claim("sub", format!("mailto:{}", EMAIL_ADDRESS.to_string()));
+    let (vapid_signature, subscription_info) = match build_vapid_signature(cookies) {
+        Ok(sig) => sig,
+        Err(status_code) => return Ok(status_code),
+    };
 
     // Now add payload and encrypt.
-    let mut builder = WebPushMessageBuilder::new(&subscription_info);
-    let notification = Notification {
-        title: "Hello, world!".to_string(),
-        message: "This notification was sent using the push API.".to_string(),
-        icon: "https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f514.png"
-            .to_string(),
-        link: "https://demo.push-notifications.app?notification_clicked=true".to_string(),
-        button_link: "https://github.com/tix-factory/push-notifications/issues".to_string(),
-        buttons: ["🐛 File Bug".to_string()],
+    let message = match build_web_push_message(
+        vapid_signature,
+        subscription_info,
+        Notification {
+            title: String::from("Hello, world!"),
+            message: "This notification was sent using the push API.".to_string(),
+            icon: "https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f514.png"
+                .to_string(),
+            link: "https://demo.push-notifications.app?notification_clicked=true".to_string(),
+            button_link: "https://github.com/tix-factory/push-notifications/issues".to_string(),
+            buttons: ["🐛 File Bug".to_string()],
+        },
+    ) {
+        Ok(m) => m,
+        Err(status_code) => return Ok(status_code),
     };
-    let json = serde_json::to_string(&notification).unwrap();
-    builder.set_payload(ContentEncoding::Aes128Gcm, json.as_bytes());
-    builder.set_vapid_signature(sig_builder.build().unwrap());
 
     // Finally, send the notification!
-    let client = IsahcWebPushClient::new();
-    let result = client.unwrap().send(builder.build().unwrap()).await;
-    if !result.is_ok() {
-        println!(
-            "Failed to send push notification: {}",
-            result.err().unwrap()
-        );
-        return StatusCode::INTERNAL_SERVER_ERROR;
+    match IsahcWebPushClient::new() {
+        Ok(client) => match client.send(message).await {
+            Ok(_) => Ok(StatusCode::NO_CONTENT),
+            Err(e) => {
+                println!("Failed to send push notification: {}", e.to_string());
+                Ok(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+        },
+        Err(e) => {
+            println!("Failed to build push client: {}", e.to_string());
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
     }
+}
 
-    StatusCode::NO_CONTENT
+/// Builds the VAPID signature used to send the push notification.
+fn build_vapid_signature(
+    cookies: CookieJar,
+) -> Result<(VapidSignature, SubscriptionInfo), StatusCode> {
+    // Parse cookie for subscription information
+    let subscription_info = match fetch(cookies) {
+        Ok(cookie) => SubscriptionInfo::new(cookie.sub, cookie.p256dh, cookie.auth),
+        Err(_) => return Err(StatusCode::UNAUTHORIZED),
+    };
+
+    // Create the signature builder
+    let mut sig_builder =
+        match VapidSignatureBuilder::from_pem(VAPID_PRIVATE_KEY.as_bytes(), &subscription_info) {
+            Ok(sig) => sig,
+            Err(e) => {
+                println!("Failed to build VAPID signature builder: {}", e.to_string());
+                return Err(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        };
+
+    // Add VAPID claims
+    sig_builder.add_claim("sub", format!("mailto:{}", EMAIL_ADDRESS.to_string()));
+
+    // Return the signature itself
+    match sig_builder.build() {
+        Ok(sig) => Ok((sig, subscription_info)),
+        Err(e) => {
+            println!("Failed to build VAPID signature builder: {}", e.to_string());
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// Builds the web push notification/message.
+fn build_web_push_message(
+    vapid_signature: VapidSignature,
+    subscription_info: SubscriptionInfo,
+    notification: Notification,
+) -> Result<WebPushMessage, StatusCode> {
+    let web_push_message = match serde_json::to_string(&notification) {
+        Ok(json) => {
+            let mut builder = WebPushMessageBuilder::new(&subscription_info);
+            builder.set_payload(ContentEncoding::Aes128Gcm, json.as_bytes());
+            builder.set_vapid_signature(vapid_signature);
+            builder.build()
+        }
+        Err(e) => {
+            println!("Failed to serialize notification: {}", e.to_string());
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    match web_push_message {
+        Ok(message) => Ok(message),
+        Err(e) => {
+            println!("Failed to build push notification: {}", e.to_string());
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// Decodes standard base64 into URL safe base64.
+fn safe_base64(input: String) -> Result<String, DecodeError> {
+    match STANDARD.decode(input) {
+        Ok(bytes) => Ok(URL_SAFE_NO_PAD.encode(bytes)),
+        Err(e) => Err(e),
+    }
 }
