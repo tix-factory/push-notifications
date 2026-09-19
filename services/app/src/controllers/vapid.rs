@@ -139,7 +139,7 @@ pub async fn push(cookies: CookieJar) -> Result<StatusCode, String> {
         vapid_signature,
         subscription_info,
         Notification {
-            title: "Hello, world!".to_string(),
+            title: String::from("Hello, world!"),
             message: "This notification was sent using the push API.".to_string(),
             icon: "https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f514.png"
                 .to_string(),
