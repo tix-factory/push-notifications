@@ -1,5 +1,5 @@
 use crate::cookies::{authenticate, clear, fetch, AuthCookie};
-use crate::utils::{EMAIL_ADDRESS, VAPID_PUBLIC_KEY};
+use crate::utils::{EMAIL_ADDRESS, VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
 use base64::{
@@ -8,7 +8,6 @@ use base64::{
 };
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::env;
 use web_push::{
     ContentEncoding, IsahcWebPushClient, SubscriptionInfo, VapidSignature, VapidSignatureBuilder,
     WebPushClient, WebPushMessage, WebPushMessageBuilder,
@@ -179,21 +178,14 @@ fn build_vapid_signature(
     };
 
     // Create the signature builder
-    let mut sig_builder = match env::var("VAPID__PRIVATE_KEY") {
-        Ok(raw_private_key) => {
-            match VapidSignatureBuilder::from_pem(raw_private_key.as_bytes(), &subscription_info) {
-                Ok(sig) => sig,
-                Err(e) => {
-                    println!("Failed to build VAPID signature builder: {}", e.to_string());
-                    return Err(StatusCode::INTERNAL_SERVER_ERROR);
-                }
+    let mut sig_builder =
+        match VapidSignatureBuilder::from_pem(VAPID_PRIVATE_KEY.as_bytes(), &subscription_info) {
+            Ok(sig) => sig,
+            Err(e) => {
+                println!("Failed to build VAPID signature builder: {}", e.to_string());
+                return Err(StatusCode::INTERNAL_SERVER_ERROR);
             }
-        }
-        Err(_) => {
-            println!("VAPID__PRIVATE_KEY is not set.");
-            return Err(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
+        };
 
     // Add VAPID claims
     sig_builder.add_claim("sub", format!("mailto:{}", EMAIL_ADDRESS.to_string()));
