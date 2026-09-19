@@ -1,5 +1,5 @@
 use crate::cookies::{authenticate, clear, fetch, AuthCookie};
-use crate::utils::{EMAIL_ADDRESS, VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY};
+use crate::env::{EMAIL_ADDRESS, VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
 use base64::{

@@ -1,6 +1,6 @@
 mod controllers;
 mod cookies;
-mod utils;
+mod env;
 
 use crate::controllers::vapid::{metadata, push, register, registration, unregister};
 use axum::{
