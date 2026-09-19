@@ -19,6 +19,7 @@ type SendNotificationButtonInput = {
 export default function SendNotificationButton({
   pushPublicKey,
 }: SendNotificationButtonInput) {
+  const urlParams = new URLSearchParams(location.search);
   const [notificationPermission, requestNotificationPermission] =
     useNotificationPermission();
   const [pushSubscription, pushSubscriptionState] =
@@ -32,7 +33,11 @@ export default function SendNotificationButton({
   const [registrationState, setRegistrationState] = useState(
     ServerRegistrationState.Loading,
   );
-  const [sendStatus, setSendStatus] = useState(NotificationSendStatus.None);
+  const [sendStatus, setSendStatus] = useState(
+    urlParams.has('notification_clicked')
+      ? NotificationSendStatus.Clicked
+      : NotificationSendStatus.None,
+  );
 
   useEffect(() => {
     if (notificationPermission === BrowserPermission.Denied) {
@@ -210,6 +215,14 @@ export default function SendNotificationButton({
         flexDirection: 'column',
       }}
     >
+      {sendStatus === NotificationSendStatus.Clicked && (
+        <Fragment>
+          <Alert severity="info">
+            Hello, world! Did you notice the "action" button?
+          </Alert>
+          <br />
+        </Fragment>
+      )}
       {sendStatus === NotificationSendStatus.Success && (
         <Fragment>
           <Alert severity="success">Push notification has been sent.</Alert>
