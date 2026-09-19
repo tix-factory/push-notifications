@@ -155,12 +155,15 @@ pub async fn push(cookies: CookieJar) -> Result<StatusCode, String> {
 
     // Finally, send the notification!
     match IsahcWebPushClient::new() {
-        Ok(client) => {
-            let _ = client.send(message).await;
-            Ok(StatusCode::NO_CONTENT)
-        }
+        Ok(client) => match client.send(message).await {
+            Ok(_) => Ok(StatusCode::NO_CONTENT),
+            Err(e) => {
+                println!("Failed to send push notification: {}", e.to_string());
+                Ok(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+        },
         Err(e) => {
-            println!("Failed to send push notification: {}", e.to_string());
+            println!("Failed to build push client: {}", e.to_string());
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
