@@ -1,11 +1,6 @@
 use crate::cookies::{authenticate, clear, fetch, AuthCookie};
 use crate::utils::{EMAIL_ADDRESS, VAPID_PUBLIC_KEY};
-use axum::{
-    body::Body,
-    http::{Response, StatusCode},
-    response::IntoResponse,
-    Json,
-};
+use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
 use base64::{
     engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
@@ -20,7 +15,7 @@ use web_push::{
 };
 
 #[derive(Serialize)]
-struct Metadata {
+pub struct Metadata {
     /// The URL-safe base64 encoded VAPID public key.
     #[serde(rename = "publicKey")]
     public_key: String,
@@ -79,12 +74,10 @@ pub struct Notification {
 }
 
 /// The metadata endpoint used by the web app to load the VAPID public key.
-pub async fn metadata() -> Response<Body> {
-    let body = Metadata {
+pub async fn metadata() -> Json<Metadata> {
+    Json(Metadata {
         public_key: URL_SAFE_NO_PAD.encode(VAPID_PUBLIC_KEY.to_sec1_bytes()),
-    };
-
-    (Json(body),).into_response()
+    })
 }
 
 /// Gets the current push notification registration status.
