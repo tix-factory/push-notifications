@@ -4,7 +4,7 @@ use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
 use base64::{
     engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
-    Engine,
+    DecodeError, Engine,
 };
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
@@ -101,8 +101,14 @@ pub async fn register(
 ) -> Result<(StatusCode, CookieJar), StatusCode> {
     let claims = AuthCookie {
         sub: request.endpoint,
-        p256dh: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.p256dh).unwrap()),
-        auth: URL_SAFE_NO_PAD.encode(STANDARD.decode(request.auth).unwrap()),
+        p256dh: match safe_base64(request.p256dh) {
+            Ok(s) => s,
+            Err(_) => return Err(StatusCode::BAD_REQUEST),
+        },
+        auth: match safe_base64(request.auth) {
+            Ok(s) => s,
+            Err(_) => return Err(StatusCode::BAD_REQUEST),
+        },
         exp: (Utc::now().timestamp() + (3600 * 24 * 7)) as usize,
     };
 
@@ -227,5 +233,13 @@ fn build_web_push_message(
             println!("Failed to build push notification: {}", e.to_string());
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
+    }
+}
+
+/// Decodes standard base64 into URL safe base64.
+fn safe_base64(input: String) -> Result<String, DecodeError> {
+    match STANDARD.decode(input) {
+        Ok(bytes) => Ok(URL_SAFE_NO_PAD.encode(bytes)),
+        Err(e) => Err(e),
     }
 }
