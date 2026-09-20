@@ -53,7 +53,7 @@ pub fn authenticate(cookies: CookieJar, auth_cookie: AuthCookie) -> Result<Cooki
                 .build();
             Ok(cookies.add(cookie))
         }
-        Err(e) => Err(format!("Failed to encode JWT: {}", e.to_string())),
+        Err(e) => Err(format!("Failed to encode JWT: {}", e)),
     }
 }
 
