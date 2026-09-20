@@ -35,6 +35,7 @@ FROM rust:1.98.1 AS server-build
 COPY . /services/app
 WORKDIR /services/app
 RUN cargo build --release
+RUN cargo test
 
 FROM debian:trixie-slim AS server
 WORKDIR /app

@@ -65,3 +65,27 @@ pub fn clear(cookies: CookieJar) -> CookieJar {
         .build();
     cookies.remove(cookie)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_clear() {
+        let cookies = clear(
+            CookieJar::new()
+                .add(Cookie::new("foo", "bar"))
+                .add(Cookie::new("a", "b"))
+                .add(Cookie::new(AUTH_COOKIE_NAME, "hello_world")),
+        );
+
+        assert_eq!(
+            cookies
+                .iter()
+                .map(|c| c.to_string())
+                .collect::<Vec<String>>()
+                .join(", "),
+            "foo=bar, a=b"
+        );
+    }
+}
