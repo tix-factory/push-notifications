@@ -15,6 +15,7 @@ export default function usePushNotificationSubscription({
 }: PushNotificationSubscriptionHookInput): [
   PushSubscription | null,
   PushSubscriptionState,
+  (subscribe: boolean) => Promise<void>,
 ] {
   const [notificationPermission] = useNotificationPermission();
   const [serviceWorkerRegistration, serviceWorkerInstallationState] =
@@ -24,6 +25,42 @@ export default function usePushNotificationSubscription({
   );
   const [pushSubscription, setPushSubscription] =
     useState<PushSubscription | null>(null);
+
+  const setSubscriptionState = async (subscribe: boolean): Promise<void> => {
+    if (!pushSubscription || !serviceWorkerRegistration) {
+      return Promise.reject(
+        new Error('Push subscription has not been fetched yet.'),
+      );
+    }
+
+    try {
+      if (pushSubscriptionState === PushSubscriptionState.Unsubscribed) {
+        if (!subscribe) {
+          return;
+        }
+
+        setPushSubscriptionState(PushSubscriptionState.Loading);
+        const newSubscription =
+          await serviceWorkerRegistration.pushManager.subscribe(
+            pushSubscriptionOptions,
+          );
+        setPushSubscription(newSubscription);
+        setPushSubscriptionState(PushSubscriptionState.Available);
+      } else if (pushSubscriptionState === PushSubscriptionState.Available) {
+        if (subscribe) {
+          return;
+        }
+
+        setPushSubscriptionState(PushSubscriptionState.Loading);
+        await pushSubscription.unsubscribe();
+        setPushSubscriptionState(PushSubscriptionState.Unsubscribed);
+      }
+    } catch (err) {
+      console.error('Failed to subscribe to push notifications', err);
+      setPushSubscriptionState(PushSubscriptionState.Error);
+      throw err;
+    }
+  };
 
   useEffect(() => {
     // Service workers are required to obtain a push subscription.
@@ -144,5 +181,5 @@ export default function usePushNotificationSubscription({
     serviceWorkerInstallationState,
   ]);
 
-  return [pushSubscription, pushSubscriptionState];
+  return [pushSubscription, pushSubscriptionState, setSubscriptionState];
 }

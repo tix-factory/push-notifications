@@ -11,6 +11,9 @@ enum NotificationSendStatus {
 
   // The push message was sent successfully.
   Success = 'Success',
+
+  // Displays a message when the notification has been clicked on.
+  Clicked = 'Clicked',
 }
 
 export default NotificationSendStatus;

@@ -1,4 +1,4 @@
-import { Alert, Box, Button, CircularProgress, Link } from '@mui/material';
+import { Alert, Box, CircularProgress, Link } from '@mui/material';
 import {
   BrowserPermission,
   PushSubscriptionState,
@@ -7,21 +7,22 @@ import {
 } from '@tix-factory/push-notifications';
 import { Fragment, useEffect, useState } from 'react';
 import { serviceWorkerUrl } from '../../constants';
-import NotificationSendStatus from '../../enums/notificationSendStatus';
 import ServerRegistrationState from '../../enums/serverRegistrationState';
-import { register, sendPushNotification, unregister } from '../../services/api';
+import { register, unregister } from '../../services/api';
+import SendNotificationButton from './button';
+import UnsubscribeButton from './unsubscribe';
 
-type SendNotificationButtonInput = {
+type SendNotificationContainerInput = {
   // The (base64 encoded) public key to create the push subscription with.
   pushPublicKey: string;
 };
 
-export default function SendNotificationButton({
+export default function SendNotificationContainer({
   pushPublicKey,
-}: SendNotificationButtonInput) {
+}: SendNotificationContainerInput) {
   const [notificationPermission, requestNotificationPermission] =
     useNotificationPermission();
-  const [pushSubscription, pushSubscriptionState] =
+  const [pushSubscription, pushSubscriptionState, setSubscriptionState] =
     usePushNotificationSubscription({
       serviceWorkerUrl,
       pushSubscriptionOptions: {
@@ -32,13 +33,19 @@ export default function SendNotificationButton({
   const [registrationState, setRegistrationState] = useState(
     ServerRegistrationState.Loading,
   );
-  const [sendStatus, setSendStatus] = useState(NotificationSendStatus.None);
 
   useEffect(() => {
-    if (notificationPermission === BrowserPermission.Denied) {
+    if (
+      notificationPermission === BrowserPermission.Denied ||
+      pushSubscriptionState === PushSubscriptionState.Unsubscribed
+    ) {
       unregister()
         .then(() => {
-          console.log('Cleared authentication cookie for denied permission.');
+          console.log(
+            notificationPermission === BrowserPermission.Denied
+              ? 'Cleared authentication cookie for denied permission.'
+              : 'Cleared authentication cookie for unsubscription.',
+          );
         })
         .catch((e) => {
           console.error(
@@ -68,23 +75,16 @@ export default function SendNotificationButton({
         );
         setRegistrationState(ServerRegistrationState.Error);
       });
-  }, [pushSubscription, pushSubscription?.endpoint, notificationPermission]);
+  }, [
+    pushSubscription,
+    pushSubscription?.endpoint,
+    notificationPermission,
+    pushSubscriptionState,
+  ]);
 
   const grantPermissionClick = async (event: React.MouseEvent) => {
     event.preventDefault();
     await requestNotificationPermission();
-  };
-
-  const sendPushNotificationClicked = async () => {
-    setSendStatus(NotificationSendStatus.Sending);
-
-    try {
-      await sendPushNotification();
-      setSendStatus(NotificationSendStatus.Success);
-    } catch (err) {
-      console.error('Failed to send push notification', err);
-      setSendStatus(NotificationSendStatus.Error);
-    }
   };
 
   // Check the current state of our notification permissions.
@@ -141,10 +141,17 @@ export default function SendNotificationButton({
   // Check the current state of our push subscription.
   switch (pushSubscriptionState) {
     case PushSubscriptionState.Available:
+    case PushSubscriptionState.Unsubscribed:
       // We have our push subscription.
       break;
 
     case PushSubscriptionState.Loading:
+      if (pushSubscription?.endpoint) {
+        // We already have a push subscription, which means we got here from a button click.
+        // Don't show the loading indicator.
+        break;
+      }
+
       // Show a loading indicator while we obtain our push notificaiton subscription.
       return <CircularProgress />;
 
@@ -196,10 +203,6 @@ export default function SendNotificationButton({
   }
 
   // We're all set!
-  if (sendStatus === NotificationSendStatus.Sending) {
-    return <CircularProgress />;
-  }
-
   return (
     <Box
       className="send-notification-button"
@@ -210,26 +213,14 @@ export default function SendNotificationButton({
         flexDirection: 'column',
       }}
     >
-      {sendStatus === NotificationSendStatus.Success && (
-        <Fragment>
-          <Alert severity="success">Push notification has been sent.</Alert>
-          <br />
-        </Fragment>
+      <SendNotificationButton pushSubscriptionState={pushSubscriptionState} />
+      <br />
+      {pushSubscription && (
+        <UnsubscribeButton
+          pushSubscriptionState={pushSubscriptionState}
+          setSubscriptionState={setSubscriptionState}
+        />
       )}
-      {sendStatus === NotificationSendStatus.Error && (
-        <Fragment>
-          <Alert severity="error">Push notification failed to send.</Alert>
-          <br />
-        </Fragment>
-      )}
-      <Button
-        onClick={sendPushNotificationClicked}
-        variant="outlined"
-        color="primary"
-        fullWidth
-      >
-        Send Push Notification
-      </Button>
     </Box>
   );
 }
