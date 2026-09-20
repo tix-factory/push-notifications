@@ -75,7 +75,7 @@ pub struct Notification {
 /// The metadata endpoint used by the web app to load the VAPID public key.
 pub async fn metadata() -> Json<Metadata> {
     Json(Metadata {
-        public_key: URL_SAFE_NO_PAD.encode(VAPID_PUBLIC_KEY.to_sec1_bytes()),
+        public_key: VAPID_PUBLIC_KEY.to_string(),
     })
 }
 
