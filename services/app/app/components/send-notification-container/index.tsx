@@ -22,7 +22,7 @@ export default function SendNotificationContainer({
 }: SendNotificationContainerInput) {
   const [notificationPermission, requestNotificationPermission] =
     useNotificationPermission();
-  const [pushSubscription, pushSubscriptionState] =
+  const [pushSubscription, pushSubscriptionState, setSubscriptionState] =
     usePushNotificationSubscription({
       serviceWorkerUrl,
       pushSubscriptionOptions: {
@@ -35,10 +35,17 @@ export default function SendNotificationContainer({
   );
 
   useEffect(() => {
-    if (notificationPermission === BrowserPermission.Denied) {
+    if (
+      notificationPermission === BrowserPermission.Denied ||
+      pushSubscriptionState === PushSubscriptionState.Unsubscribed
+    ) {
       unregister()
         .then(() => {
-          console.log('Cleared authentication cookie for denied permission.');
+          console.log(
+            notificationPermission === BrowserPermission.Denied
+              ? 'Cleared authentication cookie for denied permission.'
+              : 'Cleared authentication cookie for unsubscription.',
+          );
         })
         .catch((e) => {
           console.error(
@@ -68,7 +75,12 @@ export default function SendNotificationContainer({
         );
         setRegistrationState(ServerRegistrationState.Error);
       });
-  }, [pushSubscription, pushSubscription?.endpoint, notificationPermission]);
+  }, [
+    pushSubscription,
+    pushSubscription?.endpoint,
+    notificationPermission,
+    pushSubscriptionState,
+  ]);
 
   const grantPermissionClick = async (event: React.MouseEvent) => {
     event.preventDefault();
@@ -129,10 +141,17 @@ export default function SendNotificationContainer({
   // Check the current state of our push subscription.
   switch (pushSubscriptionState) {
     case PushSubscriptionState.Available:
+    case PushSubscriptionState.Unsubscribed:
       // We have our push subscription.
       break;
 
     case PushSubscriptionState.Loading:
+      if (pushSubscription?.endpoint) {
+        // We already have a push subscription, which means we got here from a button click.
+        // Don't show the loading indicator.
+        break;
+      }
+
       // Show a loading indicator while we obtain our push notificaiton subscription.
       return <CircularProgress />;
 
@@ -194,9 +213,13 @@ export default function SendNotificationContainer({
         flexDirection: 'column',
       }}
     >
-      <SendNotificationButton />
+      <SendNotificationButton pushSubscriptionState={pushSubscriptionState} />
+      <br />
       {pushSubscription && (
-        <UnsubscribeButton pushSubscription={pushSubscription} />
+        <UnsubscribeButton
+          pushSubscriptionState={pushSubscriptionState}
+          setSubscriptionState={setSubscriptionState}
+        />
       )}
     </Box>
   );

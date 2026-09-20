@@ -1,9 +1,17 @@
 import { Alert, Button } from '@mui/material';
+import { PushSubscriptionState } from '@tix-factory/push-notifications';
 import { Fragment, useState } from 'react';
 import NotificationSendStatus from '../../enums/notificationSendStatus';
 import { sendPushNotification } from '../../services/api';
 
-export default function SendNotificationButton() {
+type SendNotificationButtonInput = {
+  // The current push subscription state.
+  pushSubscriptionState: PushSubscriptionState;
+};
+
+export default function SendNotificationButton({
+  pushSubscriptionState,
+}: SendNotificationButtonInput) {
   const urlParams = new URLSearchParams(location.search);
   const [sendStatus, setSendStatus] = useState(
     urlParams.has('notification_clicked')
@@ -49,7 +57,10 @@ export default function SendNotificationButton() {
         onClick={sendPushNotificationClicked}
         variant="outlined"
         color="primary"
-        disabled={sendStatus === NotificationSendStatus.Sending}
+        disabled={
+          sendStatus === NotificationSendStatus.Sending ||
+          pushSubscriptionState !== PushSubscriptionState.Available
+        }
         fullWidth
       >
         Send Push Notification

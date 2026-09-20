@@ -1,35 +1,52 @@
 import { Button } from '@mui/material';
-import { Fragment, useState } from 'react';
+import { PushSubscriptionState } from '@tix-factory/push-notifications';
+import { Fragment } from 'react';
 
 type UnsubscribeButtonInput = {
-  // The (base64 encoded) public key to create the push subscription with.
-  pushSubscription: PushSubscription;
+  // The current push subscription state.
+  pushSubscriptionState: PushSubscriptionState;
+
+  setSubscriptionState: (subscribe: boolean) => Promise<void>;
 };
 
 export default function UnsubscribeButton({
-  pushSubscription,
+  pushSubscriptionState,
+  setSubscriptionState,
 }: UnsubscribeButtonInput) {
-  const [disabled, setDisabled] = useState(false);
-
-  const buttonClicked = async () => {
-    setDisabled(true);
-    pushSubscription
-      .unsubscribe()
-      .then(() => {
-        console.log('Done?');
-      })
-      .catch((e) => {
-        console.error('Failed to unsubscribe:', e);
-      });
+  const resubscribe = async () => {
+    setSubscriptionState(true).catch((err) => {
+      console.error('Failed to resubscribe from push notifications', err);
+    });
   };
+
+  const unsubscribe = async () => {
+    setSubscriptionState(false).catch((err) => {
+      console.error('Failed to unsubscribe from push notifications', err);
+    });
+  };
+
+  if (pushSubscriptionState === PushSubscriptionState.Unsubscribed) {
+    return (
+      <Fragment>
+        <Button
+          onClick={resubscribe}
+          variant="outlined"
+          color="secondary"
+          fullWidth
+        >
+          Resubscribe to Notifications
+        </Button>
+      </Fragment>
+    );
+  }
 
   return (
     <Fragment>
       <Button
-        onClick={buttonClicked}
+        onClick={unsubscribe}
         variant="outlined"
         color="secondary"
-        disabled={disabled}
+        disabled={pushSubscriptionState !== PushSubscriptionState.Available}
         fullWidth
       >
         Unsubscribe from Notifications

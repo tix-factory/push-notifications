@@ -9,6 +9,9 @@ enum PushSubscriptionState {
   // Permission is required before a push subscription can be made available.
   PermissionRequired = 'PermissionRequired',
 
+  // The push subscription is available, but not currently subscribed.
+  Unsubscribed = 'Unsubscribed',
+
   // The browser does not support push subscriptions.
   // This could be because notifications are not supported, or service workers are not supported.
   Unsupported = 'Unsupported',
