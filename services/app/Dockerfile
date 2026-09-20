@@ -35,7 +35,11 @@ FROM rust:1.98.1 AS server-build
 COPY . /services/app
 WORKDIR /services/app
 RUN cargo build --release
-RUN cargo test
+
+# Run tests
+RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+RUN cargo binstall cargo-nextest --secure -y
+RUN cargo nextest run
 
 FROM debian:trixie-slim AS server
 WORKDIR /app
