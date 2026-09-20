@@ -11,14 +11,14 @@ import NotificationSendStatus from '../../enums/notificationSendStatus';
 import ServerRegistrationState from '../../enums/serverRegistrationState';
 import { register, sendPushNotification, unregister } from '../../services/api';
 
-type SendNotificationButtonInput = {
+type SendNotificationContainerInput = {
   // The (base64 encoded) public key to create the push subscription with.
   pushPublicKey: string;
 };
 
-export default function SendNotificationButton({
+export default function SendNotificationContainer({
   pushPublicKey,
-}: SendNotificationButtonInput) {
+}: SendNotificationContainerInput) {
   const urlParams = new URLSearchParams(location.search);
   const [notificationPermission, requestNotificationPermission] =
     useNotificationPermission();

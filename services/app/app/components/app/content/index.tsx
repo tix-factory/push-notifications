@@ -6,7 +6,7 @@ import {
 import { Fragment, useEffect, useState } from 'react';
 import { serviceWorkerUrl } from '../../../constants';
 import { loadPublicKey } from '../../../services/api';
-import SendNotificationButton from '../../send-notification-button';
+import SendNotificationContainer from '../../send-notification-container';
 
 export default function AppContent() {
   const [, serviceWorkerInstallationState] =
@@ -66,7 +66,7 @@ export default function AppContent() {
   // Once we have our registered service worker, show the rest of the content on the page.
   return (
     <Fragment>
-      <SendNotificationButton pushPublicKey={pushPublicKey} />
+      <SendNotificationContainer pushPublicKey={pushPublicKey} />
     </Fragment>
   );
 }
