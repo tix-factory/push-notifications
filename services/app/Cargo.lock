@@ -1966,6 +1966,7 @@ dependencies = [
  "base64 0.23.1",
  "chrono",
  "jsonwebtoken",
+ "openssl",
  "p256 0.14.0",
  "serde",
  "serde_json",

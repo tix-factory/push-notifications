@@ -75,7 +75,7 @@ pub struct Notification {
 /// The metadata endpoint used by the web app to load the VAPID public key.
 pub async fn metadata() -> Json<Metadata> {
     Json(Metadata {
-        public_key: URL_SAFE_NO_PAD.encode(VAPID_PUBLIC_KEY.to_sec1_bytes()),
+        public_key: VAPID_PUBLIC_KEY.to_string(),
     })
 }
 
@@ -156,12 +156,12 @@ pub async fn push(cookies: CookieJar) -> Result<StatusCode, String> {
         Ok(client) => match client.send(message).await {
             Ok(_) => Ok(StatusCode::NO_CONTENT),
             Err(e) => {
-                println!("Failed to send push notification: {}", e.to_string());
+                println!("Failed to send push notification: {}", e);
                 Ok(StatusCode::INTERNAL_SERVER_ERROR)
             }
         },
         Err(e) => {
-            println!("Failed to build push client: {}", e.to_string());
+            println!("Failed to build push client: {}", e);
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -182,19 +182,19 @@ fn build_vapid_signature(
         match VapidSignatureBuilder::from_pem(VAPID_PRIVATE_KEY.as_bytes(), &subscription_info) {
             Ok(sig) => sig,
             Err(e) => {
-                println!("Failed to build VAPID signature builder: {}", e.to_string());
+                println!("Failed to build VAPID signature builder: {}", e);
                 return Err(StatusCode::INTERNAL_SERVER_ERROR);
             }
         };
 
     // Add VAPID claims
-    sig_builder.add_claim("sub", format!("mailto:{}", EMAIL_ADDRESS.to_string()));
+    sig_builder.add_claim("sub", format!("mailto:{}", *EMAIL_ADDRESS));
 
     // Return the signature itself
     match sig_builder.build() {
         Ok(sig) => Ok((sig, subscription_info)),
         Err(e) => {
-            println!("Failed to build VAPID signature builder: {}", e.to_string());
+            println!("Failed to build VAPID signature builder: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -214,7 +214,7 @@ fn build_web_push_message(
             builder.build()
         }
         Err(e) => {
-            println!("Failed to serialize notification: {}", e.to_string());
+            println!("Failed to serialize notification: {}", e);
             return Err(StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
@@ -222,7 +222,7 @@ fn build_web_push_message(
     match web_push_message {
         Ok(message) => Ok(message),
         Err(e) => {
-            println!("Failed to build push notification: {}", e.to_string());
+            println!("Failed to build push notification: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
