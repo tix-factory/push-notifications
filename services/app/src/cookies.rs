@@ -40,7 +40,7 @@ pub fn fetch(cookies: CookieJar) -> Result<AuthCookie, String> {
 
 /// Authenticates the cookie jar with a JWT.
 pub fn authenticate(cookies: CookieJar, auth_cookie: AuthCookie) -> Result<CookieJar, String> {
-    let private_key = match EncodingKey::from_rsa_pem(JWT_PRIVATE_KEY.clone().as_bytes()) {
+    let private_key = match EncodingKey::from_rsa_pem(JWT_PRIVATE_KEY.as_bytes()) {
         Ok(key) => key,
         Err(e) => return Err(e.to_string()),
     };
