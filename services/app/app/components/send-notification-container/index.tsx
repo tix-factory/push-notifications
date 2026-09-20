@@ -10,6 +10,7 @@ import { serviceWorkerUrl } from '../../constants';
 import ServerRegistrationState from '../../enums/serverRegistrationState';
 import { register, unregister } from '../../services/api';
 import SendNotificationButton from './button';
+import UnsubscribeButton from './unsubscribe';
 
 type SendNotificationContainerInput = {
   // The (base64 encoded) public key to create the push subscription with.
@@ -194,6 +195,9 @@ export default function SendNotificationContainer({
       }}
     >
       <SendNotificationButton />
+      {pushSubscription && (
+        <UnsubscribeButton pushSubscription={pushSubscription} />
+      )}
     </Box>
   );
 }
