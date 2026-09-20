@@ -1,4 +1,4 @@
-import { Alert, Box, Button, CircularProgress, Link } from '@mui/material';
+import { Alert, Box, CircularProgress, Link } from '@mui/material';
 import {
   BrowserPermission,
   PushSubscriptionState,
@@ -7,9 +7,9 @@ import {
 } from '@tix-factory/push-notifications';
 import { Fragment, useEffect, useState } from 'react';
 import { serviceWorkerUrl } from '../../constants';
-import NotificationSendStatus from '../../enums/notificationSendStatus';
 import ServerRegistrationState from '../../enums/serverRegistrationState';
-import { register, sendPushNotification, unregister } from '../../services/api';
+import { register, unregister } from '../../services/api';
+import SendNotificationButton from './button';
 
 type SendNotificationContainerInput = {
   // The (base64 encoded) public key to create the push subscription with.
@@ -19,7 +19,6 @@ type SendNotificationContainerInput = {
 export default function SendNotificationContainer({
   pushPublicKey,
 }: SendNotificationContainerInput) {
-  const urlParams = new URLSearchParams(location.search);
   const [notificationPermission, requestNotificationPermission] =
     useNotificationPermission();
   const [pushSubscription, pushSubscriptionState] =
@@ -32,11 +31,6 @@ export default function SendNotificationContainer({
     });
   const [registrationState, setRegistrationState] = useState(
     ServerRegistrationState.Loading,
-  );
-  const [sendStatus, setSendStatus] = useState(
-    urlParams.has('notification_clicked')
-      ? NotificationSendStatus.Clicked
-      : NotificationSendStatus.None,
   );
 
   useEffect(() => {
@@ -78,18 +72,6 @@ export default function SendNotificationContainer({
   const grantPermissionClick = async (event: React.MouseEvent) => {
     event.preventDefault();
     await requestNotificationPermission();
-  };
-
-  const sendPushNotificationClicked = async () => {
-    setSendStatus(NotificationSendStatus.Sending);
-
-    try {
-      await sendPushNotification();
-      setSendStatus(NotificationSendStatus.Success);
-    } catch (err) {
-      console.error('Failed to send push notification', err);
-      setSendStatus(NotificationSendStatus.Error);
-    }
   };
 
   // Check the current state of our notification permissions.
@@ -201,10 +183,6 @@ export default function SendNotificationContainer({
   }
 
   // We're all set!
-  if (sendStatus === NotificationSendStatus.Sending) {
-    return <CircularProgress />;
-  }
-
   return (
     <Box
       className="send-notification-button"
@@ -215,34 +193,7 @@ export default function SendNotificationContainer({
         flexDirection: 'column',
       }}
     >
-      {sendStatus === NotificationSendStatus.Clicked && (
-        <Fragment>
-          <Alert severity="info">
-            Hello, world! Did you notice the "action" button?
-          </Alert>
-          <br />
-        </Fragment>
-      )}
-      {sendStatus === NotificationSendStatus.Success && (
-        <Fragment>
-          <Alert severity="success">Push notification has been sent.</Alert>
-          <br />
-        </Fragment>
-      )}
-      {sendStatus === NotificationSendStatus.Error && (
-        <Fragment>
-          <Alert severity="error">Push notification failed to send.</Alert>
-          <br />
-        </Fragment>
-      )}
-      <Button
-        onClick={sendPushNotificationClicked}
-        variant="outlined"
-        color="primary"
-        fullWidth
-      >
-        Send Push Notification
-      </Button>
+      <SendNotificationButton />
     </Box>
   );
 }
